@@ -471,6 +471,11 @@ const Dashboard = () => {
               previousBMI={previousBMI} 
             />
           )}
+
+          {/* Menstrual Cycle Tracker Card - Only for female users */}
+          {userProfile?.gender === 'female' && (
+            <MenstrualCycleTracker />
+          )}
         </div>
 
         {/* Height Setup (if not set) */}
@@ -499,13 +504,6 @@ const Dashboard = () => {
             weightUnit={weightUnit}
           />
         </div>
-
-        {/* Menstrual Cycle Tracker - Only for female users */}
-        {userProfile?.gender === 'female' && (
-          <div className="mb-6 md:mb-8">
-            <MenstrualCycleTracker />
-          </div>
-        )}
 
         {/* Quick Actions */}
         {currentWeight && (
