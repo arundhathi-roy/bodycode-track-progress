@@ -231,7 +231,18 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Weight Chart */}
           <Card className="p-6 bg-gradient-card shadow-medium border-0">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Weight Trend</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-foreground">Weight Trend</h2>
+              <Button 
+                onClick={() => {
+                  const quickEntrySection = document.querySelector('[data-section="quick-entry"]');
+                  quickEntrySection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
+              >
+                Log today's weight
+              </Button>
+            </div>
             <WeightChart />
           </Card>
 
@@ -273,7 +284,7 @@ const Dashboard = () => {
             </Card>
 
             {/* Quick Weight Entry */}
-            <Card className="p-6 bg-gradient-card shadow-medium border-0">
+            <Card className="p-6 bg-gradient-card shadow-medium border-0" data-section="quick-entry">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Quick Entry</h3>
               <WeightEntryForm />
             </Card>
