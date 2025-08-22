@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -20,6 +20,7 @@ import { SwipeableEntry } from "./mobile/SwipeableEntry";
 import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
 import { DataExport } from "./data-management/DataExport";
+import { WaterIntakeTracker } from "./WaterIntakeTracker";
 import { ProgressInsights } from "./help/ProgressInsights";
 import { NotificationSystem } from "./notifications/NotificationSystem";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -305,9 +306,8 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
             
-            {/* Export and Notifications section */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
-              <DataExport weightUnit={weightUnit} />
+            {/* Notifications section */}
+            <div className="flex items-center justify-center">
               {user && <NotificationSystem userId={user.id} />}
             </div>
           </div>
@@ -333,34 +333,52 @@ const Dashboard = () => {
                   {formatWeight(currentWeight)}
                 </p>
                 
-                {/* Log Weight Button */}
-                {isMobile ? (
-                  <Button 
-                    onClick={() => setShowBottomSheet(true)}
-                    size="sm"
-                    className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Log Weight
-                  </Button>
-                ) : (
+                {/* Log Weight and Export Buttons */}
+                <div className="flex gap-2">
+                  {isMobile ? (
+                    <Button 
+                      onClick={() => setShowBottomSheet(true)}
+                      size="sm"
+                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white flex-1"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Log Weight
+                    </Button>
+                  ) : (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm"
+                          className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white flex-1"
+                        >
+                          Log today's weight
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Log Today's Weight</DialogTitle>
+                        </DialogHeader>
+                        <WeightEntryForm weightUnit={weightUnit} />
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  
+                  {/* Export Button */}
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button 
-                        size="sm"
-                        className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
-                      >
-                        Log today's weight
+                      <Button size="sm" variant="outline" className="gap-1">
+                        <Download className="h-3 w-3" />
+                        Export
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Log Today's Weight</DialogTitle>
+                        <DialogTitle>Export Weight Data</DialogTitle>
                       </DialogHeader>
-                      <WeightEntryForm weightUnit={weightUnit} />
+                      <DataExport weightUnit={weightUnit} />
                     </DialogContent>
                   </Dialog>
-                )}
+                </div>
               </div>
               <div className="p-2 md:p-3 bg-primary/10 rounded-full">
                 <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -569,9 +587,13 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Height Setup Card */}
-          {height && (
+          {/* Water Intake Tracker */}
+          {height && currentWeight && (
             <div className="space-y-6">
+              <WaterIntakeTracker 
+                currentWeight={currentWeight}
+                weightUnit={weightUnit}
+              />
               <HeightSetup onHeightSet={handleHeightUpdate} currentHeight={height} />
             </div>
           )}
