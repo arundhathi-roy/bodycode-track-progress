@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarDays, Plus, CalendarIcon } from 'lucide-react';
+import { CalendarDays, Plus, CalendarIcon, Download } from 'lucide-react';
 import { format, differenceInDays, addDays, isWithinInterval } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -110,6 +110,51 @@ export const MenstrualCycleTracker = () => {
     return null;
   };
 
+  const downloadPDF = async () => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user?.id)
+        .single();
+
+      const { data: allCycles } = await supabase
+        .from('menstrual_cycles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('start_date', { ascending: false });
+
+      const response = await fetch('https://gxwudkbfxuhyjjkdwfgc.supabase.co/functions/v1/generate-cycle-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4d3Vka2JmeHVoeWpqa2R3ZmdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODA0OTYsImV4cCI6MjA3MTQ1NjQ5Nn0.IGOR1_ac114Ueja90tjSORf3rf8TViQn-OAS65_3juU`,
+        },
+        body: JSON.stringify({
+          userEmail: profile?.email || user?.email || 'Not provided',
+          cycles: allCycles || []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `menstrual-cycle-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast.error('Failed to download PDF');
+    }
+  };
+
   const nextPeriod = calculateNextPeriod();
   const daysUntilNext = nextPeriod ? differenceInDays(nextPeriod, new Date()) : null;
 
@@ -131,98 +176,104 @@ export const MenstrualCycleTracker = () => {
           <h3 className="text-lg font-semibold text-foreground">Menstrual Cycle</h3>
           <CalendarDays className="h-5 w-5 text-primary" />
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Log Period
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Record Menstrual Cycle</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !selectedStartDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedStartDate ? format(selectedStartDate, "PPP") : <span>Pick start date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedStartDate}
-                      onSelect={setSelectedStartDate}
-                      disabled={(date) => date > new Date()}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !selectedEndDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedEndDate ? format(selectedEndDate, "PPP") : <span>Pick end date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedEndDate}
-                      onSelect={setSelectedEndDate}
-                      disabled={(date) => {
-                        if (date > new Date()) return true;
-                        if (selectedStartDate && date < selectedStartDate) return true;
-                        return false;
-                      }}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Flow Intensity</Label>
-                <Select value={flowIntensity} onValueChange={(value: 'light' | 'medium' | 'heavy') => setFlowIntensity(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="heavy">Heavy</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button onClick={addCycle} className="w-full">
-                Record Cycle
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={downloadPDF} className="gap-2">
+            <Download className="h-4 w-4" />
+            Download PDF
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Log Period
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Record Menstrual Cycle</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !selectedStartDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedStartDate ? format(selectedStartDate, "PPP") : <span>Pick start date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedStartDate}
+                        onSelect={setSelectedStartDate}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !selectedEndDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedEndDate ? format(selectedEndDate, "PPP") : <span>Pick end date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedEndDate}
+                        onSelect={setSelectedEndDate}
+                        disabled={(date) => {
+                          if (date > new Date()) return true;
+                          if (selectedStartDate && date < selectedStartDate) return true;
+                          return false;
+                        }}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Flow Intensity</Label>
+                  <Select value={flowIntensity} onValueChange={(value: 'light' | 'medium' | 'heavy') => setFlowIntensity(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="heavy">Heavy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button onClick={addCycle} className="w-full">
+                  Record Cycle
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="space-y-4">
