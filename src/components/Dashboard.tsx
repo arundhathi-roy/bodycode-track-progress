@@ -15,6 +15,7 @@ import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
 import { WeightInsights } from "./insights/WeightInsights";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
 import { AdvancedWeightChart } from "./charts/AdvancedWeightChart";
+import { MenstrualCycleTracker } from "./MenstrualCycleTracker";
 import { SwipeableEntry } from "./mobile/SwipeableEntry";
 import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
@@ -42,6 +43,7 @@ const Dashboard = () => {
     current_weight: number | null;
     height_inches: number | null;
     goal_weight: number | null;
+    gender: string | null;
   } | null>(null);
   const [weightEntries, setWeightEntries] = useState<Array<{
     weight: number;
@@ -85,7 +87,7 @@ const Dashboard = () => {
         // Fetch user profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('current_weight, height_inches, goal_weight')
+          .select('current_weight, height_inches, goal_weight, gender')
           .eq('user_id', user.id)
           .single();
 
@@ -208,7 +210,7 @@ const Dashboard = () => {
         try {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('current_weight, height_inches, goal_weight')
+            .select('current_weight, height_inches, goal_weight, gender')
             .eq('user_id', user.id)
             .single();
 
@@ -444,6 +446,13 @@ const Dashboard = () => {
             weightUnit={weightUnit}
           />
         </div>
+
+        {/* Menstrual Cycle Tracker - Only for female users */}
+        {userProfile?.gender === 'female' && (
+          <div className="mb-6 md:mb-8">
+            <MenstrualCycleTracker />
+          </div>
+        )}
 
         {/* Quick Actions */}
         {currentWeight && (

@@ -17,7 +17,11 @@ interface CycleEntry {
   start_date: string;
   end_date: string;
   flow_intensity: 'light' | 'medium' | 'heavy';
-  symptoms: string[];
+  symptoms: string[] | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
 }
 
 export const MenstrualCycleTracker = () => {
@@ -45,7 +49,7 @@ export const MenstrualCycleTracker = () => {
         .limit(12);
 
       if (error) throw error;
-      setCycles(data || []);
+      setCycles((data as CycleEntry[]) || []);
     } catch (error) {
       console.error('Error fetching cycles:', error);
     } finally {
