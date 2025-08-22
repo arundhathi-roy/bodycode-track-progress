@@ -188,14 +188,38 @@ export const MenstrualCycleTracker = () => {
   const sortedMonths = Object.keys(entriesByMonth).sort().reverse().slice(0, 3);
 
   const modifiers = {
-    flowDay: (date: Date) => !!getEntryForDate(date),
+    lightFlow: (date: Date) => {
+      const entry = getEntryForDate(date);
+      return entry?.flow_intensity === 'light';
+    },
+    mediumFlow: (date: Date) => {
+      const entry = getEntryForDate(date);
+      return entry?.flow_intensity === 'medium';
+    },
+    heavyFlow: (date: Date) => {
+      const entry = getEntryForDate(date);
+      return entry?.flow_intensity === 'heavy';
+    }
   };
 
   const modifiersStyles = {
-    flowDay: {
-      backgroundColor: 'hsl(var(--primary))',
-      color: 'hsl(var(--primary-foreground))',
-      borderRadius: '50%'
+    lightFlow: {
+      backgroundColor: '#fecaca', // light red/pink
+      color: '#7f1d1d', // dark red text
+      borderRadius: '50%',
+      fontWeight: 'bold'
+    },
+    mediumFlow: {
+      backgroundColor: '#f87171', // medium red
+      color: '#ffffff', // white text
+      borderRadius: '50%',
+      fontWeight: 'bold'
+    },
+    heavyFlow: {
+      backgroundColor: '#dc2626', // dark red
+      color: '#ffffff', // white text
+      borderRadius: '50%',
+      fontWeight: 'bold'
     }
   };
 
