@@ -29,12 +29,31 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
   const [todayGlasses, setTodayGlasses] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  // Check for day change and refresh data
+  useEffect(() => {
+    const checkDayChange = () => {
+      const newDate = format(new Date(), 'yyyy-MM-dd');
+      if (newDate !== currentDate) {
+        setCurrentDate(newDate);
+        setTodayGlasses(0); // Reset immediately for better UX
+        if (user) {
+          fetchTodayWaterIntake();
+        }
+      }
+    };
+
+    // Check every minute for day change
+    const interval = setInterval(checkDayChange, 60000);
+    return () => clearInterval(interval);
+  }, [currentDate, user]);
 
   useEffect(() => {
     if (user) {
       fetchTodayWaterIntake();
     }
-  }, [user]);
+  }, [user, currentDate]);
 
   const fetchTodayWaterIntake = async () => {
     try {
@@ -50,6 +69,8 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
       setTodayGlasses(data?.glasses_consumed || 0);
     } catch (error) {
       console.error('Error fetching water intake:', error);
+      // Reset to 0 if there's an error (likely no entry for today)
+      setTodayGlasses(0);
     } finally {
       setLoading(false);
     }
@@ -169,7 +190,7 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
           <Progress value={progressPercentage} className="h-1.5 mb-1" />
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Based on {weightUnit === 'lbs' ? currentWeight : (currentWeight! * 2.20462).toFixed(0)} lbs
+              Resets daily • {format(new Date(), 'MMM dd')}
             </span>
             <Badge variant={progressPercentage >= 100 ? 'default' : 'secondary'} className="text-xs px-1.5 py-0.5">
               {progressPercentage.toFixed(0)}%
