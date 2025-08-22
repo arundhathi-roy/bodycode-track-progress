@@ -520,10 +520,6 @@ const Dashboard = () => {
             />
           )}
 
-          {/* Menstrual Cycle Tracker Card - Only for female users */}
-          {userProfile?.gender === 'female' && (
-            <MenstrualCycleTracker />
-          )}
         </div>
 
         {/* Height Setup (if not set) */}
@@ -574,6 +570,11 @@ const Dashboard = () => {
               height={height}
             />
           </div>
+          
+          {/* Menstrual Cycle Tracker - Only for female users */}
+          {userProfile?.gender === 'female' && (
+            <MenstrualCycleTracker />
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
