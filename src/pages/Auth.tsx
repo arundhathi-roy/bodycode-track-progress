@@ -97,7 +97,7 @@ const Auth = () => {
           <img 
             src="/lovable-uploads/photo-output.PNG" 
             alt="BodyCode Logo" 
-            className="h-16 mx-auto mb-4"
+            className="h-24 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to BodyCode</h1>
           <p className="text-muted-foreground">Crack the Code to a Better Body</p>
