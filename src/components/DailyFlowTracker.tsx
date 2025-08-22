@@ -214,7 +214,7 @@ export const MenstrualCycleTracker = () => {
     <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-foreground">Daily Flow Tracking</h3>
+          <h3 className="text-lg font-semibold text-foreground">Menstruation Tracking</h3>
           <CalendarDays className="h-5 w-5 text-primary" />
         </div>
         <div className="flex gap-2">
@@ -229,7 +229,7 @@ export const MenstrualCycleTracker = () => {
                 Add Flow Entry
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>
                   {editingEntry ? 'Edit Flow Entry' : 'Add Flow Entry'}
@@ -238,15 +238,17 @@ export const MenstrualCycleTracker = () => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date > new Date()}
-                    modifiers={modifiers}
-                    modifiersStyles={modifiersStyles}
-                    className={cn("border rounded-md p-3 pointer-events-auto")}
-                  />
+                  <div className="w-full flex justify-center">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      disabled={(date) => date > new Date()}
+                      modifiers={modifiers}
+                      modifiersStyles={modifiersStyles}
+                      className={cn("border rounded-md pointer-events-auto w-full")}
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
