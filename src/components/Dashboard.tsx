@@ -376,7 +376,7 @@ const Dashboard = () => {
             <img 
               src="/lovable-uploads/b22f87c1-4124-4fef-9ccc-c468f0ce09e5.png" 
               alt="BodyCode Logo" 
-              className="h-12 sm:h-16 md:h-20 mx-auto mb-3 sm:mb-4"
+              className="h-16 sm:h-20 md:h-24 lg:h-28 mx-auto mb-3 sm:mb-4"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 px-2">
               Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
