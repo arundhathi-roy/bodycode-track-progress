@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { TrendingDown, TrendingUp, Target, Calendar } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { BMICard } from "./BMICard";
@@ -9,8 +9,10 @@ import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
 import { LogoProcessor } from "./LogoProcessor";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
+  const { signOut, user } = useAuth();
   // Height state (in inches)
   const [height, setHeight] = useState<number | null>(68); // Default 5'8" for demo
   const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
@@ -29,17 +31,31 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
-          {processedLogoUrl && (
-            <img 
-              src={processedLogoUrl} 
-              alt="BodyCode Logo" 
-              className="h-16 mx-auto mb-4"
-            />
-          )}
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back!</h1>
-          <p className="text-muted-foreground">Track your journey to a healthier you</p>
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-center flex-1">
+            {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
+            {processedLogoUrl && (
+              <img 
+                src={processedLogoUrl} 
+                alt="BodyCode Logo" 
+                className="h-16 mx-auto mb-4"
+              />
+            )}
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+            </h1>
+            <p className="text-muted-foreground">Track your journey to a healthier you</p>
+          </div>
+          
+          <Button 
+            onClick={signOut}
+            variant="outline"
+            size="sm"
+            className="mt-4"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
         {/* Stats Cards */}
