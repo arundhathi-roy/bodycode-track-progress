@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Minus, Droplets, Download } from 'lucide-react';
+import { Plus, Minus, Droplets, Download, Wine } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -189,12 +189,15 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
             <Minus className="h-4 w-4" />
           </Button>
           
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary mb-1">
-              {todayGlasses}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              glass{todayGlasses !== 1 ? 'es' : ''} today
+          <div className="flex items-center justify-center text-center gap-2">
+            <Wine className="h-8 w-8 text-primary/60" />
+            <div>
+              <div className="text-3xl font-bold text-primary mb-1">
+                {todayGlasses}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                glass{todayGlasses !== 1 ? 'es' : ''} today
+              </div>
             </div>
           </div>
           
