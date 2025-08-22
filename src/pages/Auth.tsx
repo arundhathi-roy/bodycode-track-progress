@@ -105,7 +105,7 @@ const Auth = () => {
             />
           )}
           <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to BodyCode</h1>
-          <p className="text-muted-foreground">Track your fitness journey</p>
+          <p className="text-muted-foreground">Crack the Code to a Better Body</p>
         </div>
 
         <Card className="p-6 bg-gradient-card shadow-medium border-0">
