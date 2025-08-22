@@ -250,27 +250,28 @@ export const MenstrualCycleTracker = () => {
   const stats = calculateCycleStats();
 
   return (
-    <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0 col-span-1 lg:col-span-2">
-      <div className="flex items-center justify-between mb-6">
+    <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-medium border-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-foreground">Menstruation Tracking</h3>
-          <CalendarDays className="h-5 w-5 text-primary" />
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Menstruation Tracking</h3>
+          <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={downloadPDF} className="gap-2">
-            <Download className="h-4 w-4" />
-            Download PDF
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button size="sm" variant="outline" onClick={downloadPDF} className="gap-2 text-xs sm:text-sm">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Download PDF</span>
+            <span className="sm:hidden">PDF</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" onClick={openNewEntryDialog} className="gap-2 bg-primary/90 hover:bg-primary">
-                <Plus className="h-4 w-4" />
+              <Button size="sm" onClick={openNewEntryDialog} className="gap-2 bg-primary/90 hover:bg-primary text-xs sm:text-sm">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                 Add Flow Entry
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-fit w-auto p-4">
+            <DialogContent className="w-[95vw] sm:w-auto sm:max-w-fit p-3 sm:p-4 mx-auto">
               <DialogHeader className="pb-2">
-                <DialogTitle>
+                <DialogTitle className="text-base sm:text-lg">
                   {editingEntry ? 'Edit Flow Entry' : 'Add Flow Entry'}
                 </DialogTitle>
               </DialogHeader>
@@ -345,48 +346,48 @@ export const MenstrualCycleTracker = () => {
 
       <div className="space-y-6">
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-primary/10 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{dailyEntries.length}</p>
-            <p className="text-sm text-muted-foreground">Total Days Tracked</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <div className="bg-primary/10 rounded-lg p-2 sm:p-3 md:p-4 text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{dailyEntries.length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Days Tracked</p>
           </div>
-          <div className="bg-success/10 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-success">
+          <div className="bg-success/10 rounded-lg p-2 sm:p-3 md:p-4 text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-success">
               {dailyEntries.filter(e => e.flow_intensity === 'light').length}
             </p>
-            <p className="text-sm text-muted-foreground">Light Days</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Light Days</p>
           </div>
-          <div className="bg-warning/10 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-warning">
+          <div className="bg-warning/10 rounded-lg p-2 sm:p-3 md:p-4 text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-warning">
               {dailyEntries.filter(e => e.flow_intensity === 'heavy').length}
             </p>
-            <p className="text-sm text-muted-foreground">Heavy Days</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Heavy Days</p>
           </div>
-          <div className="bg-muted/30 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">
+          <div className="bg-muted/30 rounded-lg p-2 sm:p-3 md:p-4 text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
               {dailyEntries.filter(e => e.flow_intensity === 'medium').length}
             </p>
-            <p className="text-sm text-muted-foreground">Medium Days</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Medium Days</p>
           </div>
         </div>
 
         {/* Cycle Insights */}
-        <div className="bg-muted/20 rounded-lg p-4">
-          <h4 className="text-lg font-semibold text-foreground mb-3">Cycle Insights</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-muted/20 rounded-lg p-3 sm:p-4">
+          <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3">Cycle Insights</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="text-center">
-              <p className="text-lg font-semibold text-primary">{stats.totalCycles}</p>
-              <p className="text-sm text-muted-foreground">Total Cycles</p>
+              <p className="text-base sm:text-lg font-semibold text-primary">{stats.totalCycles}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Cycles</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold text-primary">
+              <p className="text-base sm:text-lg font-semibold text-primary">
                 {stats.averageCycleLength > 0 ? `${stats.averageCycleLength} days` : 'N/A'}
               </p>
-              <p className="text-sm text-muted-foreground">Avg Cycle Length</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Avg Cycle Length</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold text-primary">{stats.currentMonthDays}</p>
-              <p className="text-sm text-muted-foreground">This Month</p>
+              <p className="text-base sm:text-lg font-semibold text-primary">{stats.currentMonthDays}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">This Month</p>
             </div>
           </div>
         </div>

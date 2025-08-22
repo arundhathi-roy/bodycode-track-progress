@@ -316,25 +316,25 @@ const Dashboard = () => {
 
       <div className="min-h-screen bg-gradient-subtle">
         {/* Top Bar with Sign Out */}
-        <div className="border-b border-border/50 bg-background/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-3 max-w-7xl">
+        <div className="border-b border-border/50 bg-background/50 backdrop-blur-sm sticky top-0 z-40">
+          <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-7xl">
             <div className="flex justify-end">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {/* Notification Bell */}
                 {user && (
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="relative bg-background/80"
+                        size={isMobile ? "sm" : "default"}
+                        className="relative bg-background/80 p-2 sm:px-3"
                       >
                         <Bell className="h-4 w-4" />
                         {/* Badge for unread count */}
                         {unreadCount > 0 && (
                           <Badge 
                             variant="destructive" 
-                            className="absolute -top-2 -right-2 h-5 w-5 text-xs p-0 flex items-center justify-center min-w-5"
+                            className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 text-xs p-0 flex items-center justify-center min-w-4 sm:min-w-5"
                           >
                             {unreadCount}
                           </Badge>
@@ -342,9 +342,10 @@ const Dashboard = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-80 p-0" 
+                      className="w-[90vw] sm:w-80 p-0 mx-2 sm:mx-0" 
                       align="end"
                       side="bottom"
+                      sideOffset={8}
                     >
                       <NotificationSystem 
                         userId={user.id} 
@@ -359,32 +360,32 @@ const Dashboard = () => {
                   onClick={signOut}
                   variant="outline"
                   size={isMobile ? "sm" : "default"}
-                  className="bg-background/80"
+                  className="bg-background/80 px-2 sm:px-4"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  <LogOut className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Sign Out</span>
                 </Button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-7xl">
           {/* Main Header */}
-          <div className="text-center mb-6 md:mb-8">
+          <div className="text-center mb-4 sm:mb-6 md:mb-8">
             <img 
               src="/lovable-uploads/b22f87c1-4124-4fef-9ccc-c468f0ce09e5.png" 
               alt="BodyCode Logo" 
-              className="h-16 md:h-20 mx-auto mb-4"
+              className="h-12 sm:h-16 md:h-20 mx-auto mb-3 sm:mb-4"
             />
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 px-2">
               Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
             </h1>
-            <p className="text-muted-foreground">Crack the Code to a Better Body</p>
+            <p className="text-sm sm:text-base text-muted-foreground px-2">Crack the Code to a Better Body</p>
             
             {/* Water Intake Widget - Centered */}
             {height && currentWeight && (
-              <div className="flex justify-center mt-6 md:mt-8">
+              <div className="flex justify-center mt-4 sm:mt-6 md:mt-8 px-2">
                 <div className="w-full max-w-md">
                   <WaterIntakeTracker 
                     currentWeight={currentWeight}
@@ -396,35 +397,35 @@ const Dashboard = () => {
           </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+          <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-soft border-0 col-span-1 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm text-muted-foreground">Current Weight</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Current Weight</p>
                   <Select value={weightUnit} onValueChange={handleUnitChange}>
-                    <SelectTrigger className="w-16 h-6 text-xs bg-background/50 border-border">
+                    <SelectTrigger className="w-14 sm:w-16 h-5 sm:h-6 text-xs bg-background/50 border-border">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="min-w-0 w-16 bg-background border-border z-50">
+                    <SelectContent className="min-w-0 w-14 sm:w-16 bg-background border-border z-50">
                       <SelectItem value="lbs" className="text-xs">lbs</SelectItem>
                       <SelectItem value="kg" className="text-xs">kg</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="text-xl md:text-2xl font-bold text-foreground mb-2">
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3">
                   {formatWeight(currentWeight)}
                 </p>
                 
                 {/* Log Weight and Export Buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                   {isMobile ? (
                     <Button 
                       onClick={() => setShowBottomSheet(true)}
                       size="sm"
-                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white flex-1"
+                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white w-full sm:flex-1 text-xs sm:text-sm"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Log Weight
                     </Button>
                   ) : (
@@ -432,12 +433,14 @@ const Dashboard = () => {
                       <DialogTrigger asChild>
                         <Button 
                           size="sm"
-                          className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white flex-1"
+                          className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white w-full sm:flex-1 text-xs sm:text-sm"
                         >
-                          Log today's weight
+                          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Log today's weight</span>
+                          <span className="sm:hidden">Log Weight</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
+                      <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
                         <DialogHeader>
                           <DialogTitle>Log Today's Weight</DialogTitle>
                         </DialogHeader>
@@ -449,12 +452,12 @@ const Dashboard = () => {
                   {/* Export Button */}
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="gap-1">
+                      <Button size="sm" variant="outline" className="gap-1 w-full sm:w-auto text-xs sm:text-sm">
                         <Download className="h-3 w-3" />
-                        Export
+                        <span className="hidden sm:inline">Export</span>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
                       <DialogHeader>
                         <DialogTitle>Export Weight Data</DialogTitle>
                       </DialogHeader>
@@ -463,50 +466,50 @@ const Dashboard = () => {
                   </Dialog>
                 </div>
               </div>
-              <div className="p-2 md:p-3 bg-primary/10 rounded-full">
-                <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <div className="p-2 sm:p-2 md:p-3 bg-primary/10 rounded-full ml-2 sm:ml-3">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
+          <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm text-muted-foreground">Yesterday's Change</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Yesterday's Change</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   {changeFromYesterday !== null ? (
                     <>
-                      <p className={`text-xl md:text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
+                      <p className={`text-lg sm:text-xl md:text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
                         {changeFromYesterday > 0 ? '+' : ''}{convertWeight(changeFromYesterday, 'lbs', weightUnit).toFixed(1)} {weightUnit}
                       </p>
                       {changeFromYesterday < 0 ? (
-                        <TrendingDown className="h-5 w-5 text-success" />
+                        <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                       ) : (
-                        <TrendingUp className="h-5 w-5 text-warning" />
+                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
                       )}
                     </>
                   ) : (
-                    <p className="text-xl md:text-2xl font-bold text-muted-foreground">No data</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground">No data</p>
                   )}
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
+          <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm text-muted-foreground">Total Progress</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Progress</p>
                 </div>
-                <p className={`text-xl md:text-2xl font-bold ${totalChange && totalChange < 0 ? 'text-success' : totalChange && totalChange > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+                <p className={`text-lg sm:text-xl md:text-2xl font-bold ${totalChange && totalChange < 0 ? 'text-success' : totalChange && totalChange > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
                   {totalChange !== null ? `${totalChange > 0 ? '+' : ''}${convertWeight(totalChange, 'lbs', weightUnit).toFixed(1)} ${weightUnit}` : 'No data'}
                 </p>
               </div>
-              <div className="p-2 md:p-3 bg-success/10 rounded-full">
-                <Target className="h-5 w-5 md:h-6 md:w-6 text-success" />
+              <div className="p-2 sm:p-2 md:p-3 bg-success/10 rounded-full ml-2 sm:ml-3">
+                <Target className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-success" />
               </div>
             </div>
           </Card>
@@ -561,9 +564,9 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6 md:mb-8">
           {/* Advanced Weight Chart */}
-          <div className="col-span-1 lg:col-span-2">
+          <div className="w-full">
             <AdvancedWeightChart 
               weightUnit={weightUnit} 
               goalWeight={goalWeight}
@@ -573,15 +576,17 @@ const Dashboard = () => {
           
           {/* Menstrual Cycle Tracker - Only for female users */}
           {userProfile?.gender === 'female' && (
-            <MenstrualCycleTracker />
+            <div className="w-full">
+              <MenstrualCycleTracker />
+            </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {/* Goal Progress */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Goal Progress */}
-            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
+            <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-medium border-0">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold text-foreground">Goal Progress</h3>
@@ -632,8 +637,8 @@ const Dashboard = () => {
             </Card>
 
             {/* Recent Weight Entries */}
-            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Recent Entries</h3>
+            <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-medium border-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">Recent Entries</h3>
               {isMobile ? (
                 <div className="space-y-2">
                   {recentEntries.slice(0, 5).map((entry) => (
