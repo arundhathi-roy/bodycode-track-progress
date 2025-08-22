@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogoProcessor } from '@/components/LogoProcessor';
 import { Loader2 } from 'lucide-react';
 
 const Auth = () => {
@@ -14,7 +13,6 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
 
   // Form states
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -96,14 +94,11 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
-          {processedLogoUrl && (
-            <img 
-              src={processedLogoUrl} 
-              alt="BodyCode Logo" 
-              className="h-16 mx-auto mb-4"
-            />
-          )}
+          <img 
+            src="/lovable-uploads/photo-output.PNG" 
+            alt="BodyCode Logo" 
+            className="h-16 mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to BodyCode</h1>
           <p className="text-muted-foreground">Crack the Code to a Better Body</p>
         </div>
