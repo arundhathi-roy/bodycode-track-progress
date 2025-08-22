@@ -74,41 +74,6 @@ export const WeightInsights = ({ entries, weightUnit, goalWeight, currentWeight 
         </p>
       </Card>
 
-      {/* Goal Timeline */}
-      {timeToGoal && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-sm">Goal Timeline</h3>
-            <Calendar className="h-4 w-4 text-primary" />
-          </div>
-          <div className="text-lg font-semibold">
-            ~{timeToGoal}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            At current rate
-          </p>
-        </Card>
-      )}
-
-      {/* Best/Worst Day Analysis */}
-      {analytics.bestDay && (
-        <Card className="p-4 md:col-span-2 lg:col-span-3">
-          <h3 className="font-semibold text-sm mb-3">Day of Week Analysis</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Best day for weight loss</p>
-              <p className="font-semibold text-success">{analytics.bestDay}</p>
-            </div>
-            {analytics.worstDay && analytics.worstDay !== analytics.bestDay && (
-              <div>
-                <p className="text-sm text-muted-foreground">Most challenging day</p>
-                <p className="font-semibold text-destructive">{analytics.worstDay}</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
       {/* Monthly Summary */}
       <Card className="p-4 md:col-span-2 lg:col-span-3">
         <h3 className="font-semibold text-sm mb-3">Summary</h3>
