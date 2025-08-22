@@ -14,7 +14,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
+  console.log('useAuth called');
   const context = useContext(AuthContext);
+  console.log('useAuth context:', context);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
@@ -22,6 +24,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log('AuthProvider rendering');
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,6 +127,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
     loading
   };
+
+  console.log('AuthProvider providing value:', value);
 
   return (
     <AuthContext.Provider value={value}>
