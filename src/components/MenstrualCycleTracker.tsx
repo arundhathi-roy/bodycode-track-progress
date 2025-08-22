@@ -163,6 +163,7 @@ export const MenstrualCycleTracker = () => {
                       mode="single"
                       selected={selectedStartDate}
                       onSelect={setSelectedStartDate}
+                      disabled={(date) => date > new Date()}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
                     />
@@ -190,7 +191,11 @@ export const MenstrualCycleTracker = () => {
                       mode="single"
                       selected={selectedEndDate}
                       onSelect={setSelectedEndDate}
-                      disabled={(date) => selectedStartDate ? date < selectedStartDate : false}
+                      disabled={(date) => {
+                        if (date > new Date()) return true;
+                        if (selectedStartDate && date < selectedStartDate) return true;
+                        return false;
+                      }}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
                     />
