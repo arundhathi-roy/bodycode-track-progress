@@ -76,19 +76,25 @@ const Dashboard = () => {
   const goalWeight = userProfile?.goal_weight || null;
   
   // Calculate yesterday's change (if we have at least 2 entries)
-  const yesterdayWeight = weightEntries.length >= 2 ? weightEntries[1].weight : null;
-  const changeFromYesterday = currentWeight && yesterdayWeight ? currentWeight - yesterdayWeight : null;
+  const yesterdayWeight = weightEntries.length >= 2 ? weightEntries[1]?.weight : null;
+  const changeFromYesterday = (currentWeight !== null && yesterdayWeight !== null) 
+    ? currentWeight - yesterdayWeight 
+    : null;
   
   // Calculate total change (from first entry to current)
-  const startWeight = weightEntries.length > 0 ? weightEntries[weightEntries.length - 1].weight : null;
-  const totalChange = currentWeight && startWeight ? currentWeight - startWeight : null;
+  const startWeight = weightEntries.length > 0 ? weightEntries[weightEntries.length - 1]?.weight : null;
+  const totalChange = (currentWeight !== null && startWeight !== null) 
+    ? currentWeight - startWeight 
+    : null;
   
   // Calculate progress to goal
-  const progressToGoal = currentWeight && goalWeight && startWeight 
+  const progressToGoal = (currentWeight !== null && goalWeight !== null && startWeight !== null) 
     ? ((startWeight - currentWeight) / (startWeight - goalWeight)) * 100 
     : 0;
   
-  const previousBMI = height && yesterdayWeight ? ((yesterdayWeight / (height * height)) * 703) : null;
+  const previousBMI = (height !== null && yesterdayWeight !== null) 
+    ? ((yesterdayWeight / (height * height)) * 703) 
+    : null;
 
   // Handle height updates
   const handleHeightUpdate = async (newHeight: number) => {
@@ -206,7 +212,7 @@ const Dashboard = () => {
           </Card>
 
           {/* BMI Card */}
-          {height && (
+          {height && currentWeight && (
             <BMICard 
               currentWeight={currentWeight} 
               height={height} 
