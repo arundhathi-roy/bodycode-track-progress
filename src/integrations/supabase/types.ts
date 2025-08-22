@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           current_weight: number | null
           email: string | null
+          gender: string | null
           goal_weight: number | null
           height_inches: number | null
           id: string
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           current_weight?: number | null
           email?: string | null
+          gender?: string | null
           goal_weight?: number | null
           height_inches?: number | null
           id?: string
@@ -39,6 +41,7 @@ export type Database = {
           created_at?: string
           current_weight?: number | null
           email?: string | null
+          gender?: string | null
           goal_weight?: number | null
           height_inches?: number | null
           id?: string

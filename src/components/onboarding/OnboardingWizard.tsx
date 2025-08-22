@@ -26,14 +26,19 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
     current_weight: '',
     goal_weight: '',
     weight_unit: 'lbs' as 'lbs' | 'kg',
+    gender: '',
     activity_level: 'moderate',
     goal_type: 'lose_weight'
   });
 
   const steps = [
     {
-      title: 'Basic Information',
-      description: 'Let\'s start with your height and current weight'
+      title: 'Personal Information',
+      description: 'Tell us about yourself'
+    },
+    {
+      title: 'Physical Information',
+      description: 'Let\'s get your measurements'
     },
     {
       title: 'Set Your Goal',
@@ -110,7 +115,8 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
           user_id: user.id,
           height_inches: heightInches,
           current_weight: weightInLbs,
-          goal_weight: goalInLbs
+          goal_weight: goalInLbs,
+          gender: formData.gender
         });
 
       if (profileError) throw profileError;
@@ -151,10 +157,12 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return formData.height_inches && formData.current_weight;
+        return formData.gender;
       case 1:
-        return formData.goal_weight && formData.goal_type;
+        return formData.height_inches && formData.current_weight;
       case 2:
+        return formData.goal_weight && formData.goal_type;
+      case 3:
         return formData.activity_level;
       default:
         return false;
@@ -179,6 +187,27 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
         <form className="space-y-4">
           {currentStep === 0 && (
+            <div>
+              <Label htmlFor="gender">Gender</Label>
+              <Select value={formData.gender} onValueChange={(value) => 
+                setFormData(prev => ({ ...prev, gender: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Please select your gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                This helps us provide more accurate health calculations and recommendations.
+              </p>
+            </div>
+          )}
+
+          {currentStep === 1 && (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -244,7 +273,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             </>
           )}
 
-          {currentStep === 1 && (
+          {currentStep === 2 && (
             <>
               <div>
                 <Label htmlFor="goal_type">What's your goal?</Label>
@@ -284,7 +313,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             </>
           )}
 
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <div>
               <Label htmlFor="activity_level">Activity Level</Label>
               <Select value={formData.activity_level} onValueChange={(value) => 
