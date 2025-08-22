@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_flow_entries: {
+        Row: {
+          created_at: string
+          flow_date: string
+          flow_intensity: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flow_date: string
+          flow_intensity: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flow_date?: string
+          flow_intensity?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       menstrual_cycles: {
         Row: {
           created_at: string

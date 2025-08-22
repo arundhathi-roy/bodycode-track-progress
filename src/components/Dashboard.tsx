@@ -15,7 +15,7 @@ import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
 import { WeightInsights } from "./insights/WeightInsights";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
 import { AdvancedWeightChart } from "./charts/AdvancedWeightChart";
-import { MenstrualCycleTracker } from "./MenstrualCycleTracker";
+import { MenstrualCycleTracker } from "./DailyFlowTracker";
 import { SwipeableEntry } from "./mobile/SwipeableEntry";
 import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
