@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Settings } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const { signOut, user } = useAuth();
   const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [weightUnit, setWeightUnit] = useState<'lbs' | 'kg'>('lbs');
   
   // Real data states
   const [userProfile, setUserProfile] = useState<{
@@ -30,6 +32,34 @@ const Dashboard = () => {
     weight: number;
     entry_date: string;
   }>>([]);
+
+  // Load unit preference from localStorage
+  useEffect(() => {
+    const savedUnit = localStorage.getItem('weightUnit') as 'lbs' | 'kg';
+    if (savedUnit) {
+      setWeightUnit(savedUnit);
+    }
+  }, []);
+
+  // Weight conversion utilities
+  const lbsToKg = (lbs: number) => lbs / 2.20462;
+  const kgToLbs = (kg: number) => kg * 2.20462;
+  
+  const convertWeight = (weight: number, fromUnit: 'lbs' | 'kg', toUnit: 'lbs' | 'kg') => {
+    if (fromUnit === toUnit) return weight;
+    return fromUnit === 'lbs' ? lbsToKg(weight) : kgToLbs(weight);
+  };
+
+  const formatWeight = (weight: number | null) => {
+    if (weight === null) return 'No data';
+    const convertedWeight = convertWeight(weight, 'lbs', weightUnit);
+    return `${convertedWeight.toFixed(1)} ${weightUnit}`;
+  };
+
+  const handleUnitChange = (newUnit: 'lbs' | 'kg') => {
+    setWeightUnit(newUnit);
+    localStorage.setItem('weightUnit', newUnit);
+  };
 
   // Fetch user data
   useEffect(() => {
@@ -181,15 +211,30 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
           </div>
           
-          <Button 
-            onClick={signOut}
-            variant="outline"
-            size="sm"
-            className="mt-4"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-3 mt-4">
+            {/* Unit Selector */}
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-muted-foreground" />
+              <Select value={weightUnit} onValueChange={handleUnitChange}>
+                <SelectTrigger className="w-20 h-8 text-sm bg-background border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="min-w-0 w-20 bg-background border-border z-50">
+                  <SelectItem value="lbs" className="text-sm">lbs</SelectItem>
+                  <SelectItem value="kg" className="text-sm">kg</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              onClick={signOut}
+              variant="outline"
+              size="sm"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -199,7 +244,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Current Weight</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {currentWeight ? `${currentWeight} lbs` : 'No data'}
+                  {formatWeight(currentWeight)}
                 </p>
               </div>
               <div className="p-3 bg-primary/10 rounded-full">
@@ -212,22 +257,22 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Yesterday's Change</p>
-                <div className="flex items-center gap-2">
-                  {changeFromYesterday !== null ? (
-                    <>
-                      <p className={`text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
-                        {changeFromYesterday > 0 ? '+' : ''}{changeFromYesterday.toFixed(1)} lbs
-                      </p>
-                      {changeFromYesterday < 0 ? (
-                        <TrendingDown className="h-5 w-5 text-success" />
-                      ) : (
-                        <TrendingUp className="h-5 w-5 text-warning" />
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-2xl font-bold text-muted-foreground">No data</p>
-                  )}
-                </div>
+                  <div className="flex items-center gap-2">
+                    {changeFromYesterday !== null ? (
+                      <>
+                        <p className={`text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
+                          {changeFromYesterday > 0 ? '+' : ''}{convertWeight(changeFromYesterday, 'lbs', weightUnit).toFixed(1)} {weightUnit}
+                        </p>
+                        {changeFromYesterday < 0 ? (
+                          <TrendingDown className="h-5 w-5 text-success" />
+                        ) : (
+                          <TrendingUp className="h-5 w-5 text-warning" />
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-2xl font-bold text-muted-foreground">No data</p>
+                    )}
+                  </div>
               </div>
             </div>
           </Card>
@@ -237,7 +282,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Progress</p>
                 <p className={`text-2xl font-bold ${totalChange && totalChange < 0 ? 'text-success' : totalChange && totalChange > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
-                  {totalChange !== null ? `${totalChange > 0 ? '+' : ''}${totalChange.toFixed(1)} lbs` : 'No data'}
+                  {totalChange !== null ? `${totalChange > 0 ? '+' : ''}${convertWeight(totalChange, 'lbs', weightUnit).toFixed(1)} ${weightUnit}` : 'No data'}
                 </p>
               </div>
               <div className="p-3 bg-success/10 rounded-full">
@@ -280,11 +325,11 @@ const Dashboard = () => {
                   <DialogHeader>
                     <DialogTitle>Log Today's Weight</DialogTitle>
                   </DialogHeader>
-                  <WeightEntryForm />
+                  <WeightEntryForm weightUnit={weightUnit} />
                 </DialogContent>
               </Dialog>
             </div>
-            <WeightChart />
+            <WeightChart weightUnit={weightUnit} />
           </Card>
 
           {/* BMI Chart */}
@@ -308,10 +353,10 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Current: {currentWeight ? `${currentWeight} lbs` : 'No data'}
+                    Current: {formatWeight(currentWeight)}
                   </span>
                   <span className="text-muted-foreground">
-                    Goal: {goalWeight ? `${goalWeight} lbs` : 'Not set'}
+                    Goal: {goalWeight ? formatWeight(goalWeight) : 'Not set'}
                   </span>
                 </div>
                 
@@ -319,7 +364,7 @@ const Dashboard = () => {
                 {height && (
                   <div className="space-y-3">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Healthy range: {healthyRange.min}-{healthyRange.max} lbs</span>
+                      <span>Healthy range: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}</span>
                       <span>BMI: 18.5-24.9</span>
                     </div>
                     <Slider
@@ -327,12 +372,12 @@ const Dashboard = () => {
                       onValueChange={(value) => handleGoalWeightUpdate(value[0])}
                       max={healthyRange.max}
                       min={healthyRange.min}
-                      step={0.5}
+                      step={weightUnit === 'kg' ? 0.25 : 0.5}
                       className="w-full"
                     />
                     <div className="text-center">
                       <span className="text-sm font-medium text-primary">
-                        {goalWeight ? `${goalWeight} lbs` : 'Set your goal'}
+                        {goalWeight ? formatWeight(goalWeight) : 'Set your goal'}
                       </span>
                     </div>
                   </div>
@@ -341,7 +386,7 @@ const Dashboard = () => {
                 <Progress value={Math.min(progressToGoal, 100)} className="h-3" />
                 <p className="text-sm text-center text-muted-foreground">
                   {currentWeight && goalWeight 
-                    ? `${Math.max(0, currentWeight - goalWeight).toFixed(1)} lbs to go`
+                    ? `${convertWeight(Math.max(0, currentWeight - goalWeight), 'lbs', weightUnit).toFixed(1)} ${weightUnit} to go`
                     : height ? 'Use the slider above to set your goal weight' : 'Set your height first to enable goal setting'
                   }
                 </p>
@@ -351,7 +396,7 @@ const Dashboard = () => {
             {/* Recent Weight Entries */}
             <Card className="p-6 bg-gradient-card shadow-medium border-0">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Recent Entries</h3>
-              <RecentWeightEntries />
+              <RecentWeightEntries weightUnit={weightUnit} />
             </Card>
           </div>
 

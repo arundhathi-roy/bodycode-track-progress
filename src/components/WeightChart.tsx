@@ -8,10 +8,20 @@ interface WeightEntry {
   entry_date: string;
 }
 
-const WeightChart = () => {
+interface WeightChartProps {
+  weightUnit?: 'lbs' | 'kg';
+}
+
+const WeightChart = ({ weightUnit = 'lbs' }: WeightChartProps) => {
   const { user } = useAuth();
   const [weightData, setWeightData] = useState<WeightEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Weight conversion utilities
+  const convertWeight = (weight: number, fromUnit: 'lbs' | 'kg', toUnit: 'lbs' | 'kg') => {
+    if (fromUnit === toUnit) return weight;
+    return fromUnit === 'lbs' ? weight / 2.20462 : weight * 2.20462;
+  };
 
   useEffect(() => {
     const fetchWeightData = async () => {
@@ -40,7 +50,7 @@ const WeightChart = () => {
   const formatChartData = () => {
     return weightData.map(entry => ({
       date: new Date(entry.entry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      weight: entry.weight,
+      weight: convertWeight(entry.weight, 'lbs', weightUnit),
       fullDate: entry.entry_date
     }));
   };
@@ -53,7 +63,7 @@ const WeightChart = () => {
         <div className="bg-card border border-border rounded-lg shadow-medium p-3">
           <p className="text-sm font-medium text-foreground">{`Date: ${label}`}</p>
           <p className="text-sm text-primary">
-            {`Weight: ${payload[0].value} lbs`}
+            {`Weight: ${payload[0].value.toFixed(1)} ${weightUnit}`}
           </p>
         </div>
       );

@@ -13,11 +13,26 @@ interface WeightEntry {
   created_at: string;
 }
 
-const RecentWeightEntries = () => {
+interface RecentWeightEntriesProps {
+  weightUnit?: 'lbs' | 'kg';
+}
+
+const RecentWeightEntries = ({ weightUnit = 'lbs' }: RecentWeightEntriesProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Weight conversion utilities
+  const convertWeight = (weight: number, fromUnit: 'lbs' | 'kg', toUnit: 'lbs' | 'kg') => {
+    if (fromUnit === toUnit) return weight;
+    return fromUnit === 'lbs' ? weight / 2.20462 : weight * 2.20462;
+  };
+
+  const formatWeight = (weight: number) => {
+    const convertedWeight = convertWeight(weight, 'lbs', weightUnit);
+    return `${convertedWeight.toFixed(1)} ${weightUnit}`;
+  };
 
   useEffect(() => {
     const fetchRecentEntries = async () => {
@@ -134,7 +149,7 @@ const RecentWeightEntries = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{entry.weight} lbs</span>
+                <span className="font-semibold text-foreground">{formatWeight(entry.weight)}</span>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar className="h-3 w-3" />
                   {formatDate(entry.entry_date)}

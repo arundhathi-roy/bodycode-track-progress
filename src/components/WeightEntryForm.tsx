@@ -8,13 +8,22 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-const WeightEntryForm = () => {
+interface WeightEntryFormProps {
+  weightUnit?: 'lbs' | 'kg';
+}
+
+const WeightEntryForm = ({ weightUnit = 'lbs' }: WeightEntryFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [weight, setWeight] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Weight conversion utilities
+  const convertToLbs = (weight: number, fromUnit: 'lbs' | 'kg') => {
+    return fromUnit === 'kg' ? weight * 2.20462 : weight;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +49,15 @@ const WeightEntryForm = () => {
     setIsLoading(true);
 
     try {
+      // Convert weight to lbs before storing (database stores in lbs)
+      const weightInLbs = convertToLbs(parseFloat(weight), weightUnit);
+      
       const { error } = await supabase
         .from('weight_entries')
         .insert([
           {
             user_id: user.id,
-            weight: parseFloat(weight),
+            weight: weightInLbs,
             entry_date: date,
             notes: notes.trim() || null
           }
@@ -55,7 +67,7 @@ const WeightEntryForm = () => {
 
       toast({
         title: "Weight logged successfully!",
-        description: `${weight} lbs recorded for ${new Date(date).toLocaleDateString()}`,
+        description: `${weight} ${weightUnit} recorded for ${new Date(date).toLocaleDateString()}`,
       });
 
       // Reset form
@@ -86,13 +98,13 @@ const WeightEntryForm = () => {
         <div className="space-y-2">
           <Label htmlFor="weight" className="flex items-center gap-2 text-sm font-medium">
             <Scale className="h-4 w-4 text-primary" />
-            Weight (lbs)
+            Weight ({weightUnit})
           </Label>
           <Input
             id="weight"
             type="number"
-            step="0.1"
-            placeholder="165.5"
+            step={weightUnit === 'kg' ? "0.1" : "0.1"}
+            placeholder={weightUnit === 'kg' ? "75.0" : "165.5"}
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             className="bg-background/50 border-border focus:ring-primary"
