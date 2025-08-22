@@ -177,7 +177,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
             </h1>
-            <p className="text-muted-foreground">Track your journey to a healthier you</p>
+            <p className="text-muted-foreground">Crack the Code to a Better Body</p>
           </div>
           
           <Button 
