@@ -11,6 +11,7 @@ import { LogoProcessor } from "./LogoProcessor";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const { signOut, user } = useAuth();
@@ -233,15 +234,21 @@ const Dashboard = () => {
           <Card className="p-6 bg-gradient-card shadow-medium border-0">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-foreground">Weight Trend</h2>
-              <Button 
-                onClick={() => {
-                  const quickEntrySection = document.querySelector('[data-section="quick-entry"]');
-                  quickEntrySection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
-              >
-                Log today's weight
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
+                  >
+                    Log today's weight
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Log Today's Weight</DialogTitle>
+                  </DialogHeader>
+                  <WeightEntryForm />
+                </DialogContent>
+              </Dialog>
             </div>
             <WeightChart />
           </Card>
