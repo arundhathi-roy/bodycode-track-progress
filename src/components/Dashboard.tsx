@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download, Bell } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -28,6 +28,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const { signOut, user } = useAuth();
@@ -277,15 +279,46 @@ const Dashboard = () => {
         <div className="border-b border-border/50 bg-background/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 max-w-7xl">
             <div className="flex justify-end">
-              <Button 
-                onClick={signOut}
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                className="bg-background/80"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Notification Bell */}
+                {user && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="relative bg-background/80"
+                      >
+                        <Bell className="h-4 w-4" />
+                        {/* Badge for unread count */}
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute -top-2 -right-2 h-5 w-5 text-xs p-0 flex items-center justify-center min-w-5"
+                        >
+                          2
+                        </Badge>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-80 p-0" 
+                      align="end"
+                      side="bottom"
+                    >
+                      <NotificationSystem userId={user.id} />
+                    </PopoverContent>
+                  </Popover>
+                )}
+                
+                <Button 
+                  onClick={signOut}
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  className="bg-background/80"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -306,21 +339,17 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
             
-            {/* Water Intake and Notifications section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-              {/* Water Intake Widget */}
-              {height && currentWeight && (
-                <WaterIntakeTracker 
-                  currentWeight={currentWeight}
-                  weightUnit={weightUnit}
-                />
-              )}
-              
-              {/* Notifications */}
-              <div className="flex items-center justify-center">
-                {user && <NotificationSystem userId={user.id} />}
+            {/* Water Intake Widget - Centered */}
+            {height && currentWeight && (
+              <div className="flex justify-center mt-6 md:mt-8">
+                <div className="w-full max-w-md">
+                  <WaterIntakeTracker 
+                    currentWeight={currentWeight}
+                    weightUnit={weightUnit}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
         {/* Stats Cards */}
