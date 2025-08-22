@@ -74,16 +74,22 @@ export const MenstrualCycleTracker = () => {
       if (editingEntry) {
         const { error } = await supabase
           .from('daily_flow_entries')
-          .update(entryData)
+          .update({
+            flow_intensity: flowIntensity,
+            notes: notes.trim() || null,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', editingEntry.id);
 
         if (error) throw error;
         toast.success('Flow entry updated successfully');
       } else {
+        // For new entries, use upsert with the unique constraint
         const { error } = await supabase
           .from('daily_flow_entries')
           .upsert(entryData, { 
-            onConflict: 'user_id,flow_date' 
+            onConflict: 'user_id,flow_date',
+            ignoreDuplicates: false
           });
 
         if (error) throw error;
@@ -207,19 +213,22 @@ export const MenstrualCycleTracker = () => {
       backgroundColor: '#fecaca', // light red/pink
       color: '#7f1d1d', // dark red text
       borderRadius: '50%',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      border: '2px solid #fca5a5'
     },
     mediumFlow: {
       backgroundColor: '#f87171', // medium red
       color: '#ffffff', // white text
       borderRadius: '50%',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      border: '2px solid #ef4444'
     },
     heavyFlow: {
       backgroundColor: '#dc2626', // dark red
       color: '#ffffff', // white text
       borderRadius: '50%',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      border: '2px solid #b91c1c'
     }
   };
 
@@ -313,7 +322,14 @@ export const MenstrualCycleTracker = () => {
                       setSelectedDate(date);
                       const existingEntry = getEntryForDate(date);
                       if (existingEntry) {
+                        // Edit existing entry
                         openEditDialog(existingEntry);
+                      } else {
+                        // Create new entry for this date
+                        setEditingEntry(null);
+                        setFlowIntensity('medium');
+                        setNotes('');
+                        setIsDialogOpen(true);
                       }
                     }}
                     className={cn("border rounded-md pointer-events-auto w-fit mx-auto")}
