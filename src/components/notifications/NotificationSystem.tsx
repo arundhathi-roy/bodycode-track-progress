@@ -16,35 +16,12 @@ interface Notification {
 
 interface NotificationSystemProps {
   userId: string;
+  notifications: Notification[];
+  onMarkAsRead: (id: string) => void;
 }
 
-export const NotificationSystem = ({ userId }: NotificationSystemProps) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+export const NotificationSystem = ({ userId, notifications, onMarkAsRead }: NotificationSystemProps) => {
   const { toast } = useToast();
-
-  // Simulate notifications for demo
-  useEffect(() => {
-    const sampleNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'achievement',
-        title: '🎉 7-Day Streak!',
-        message: 'Congratulations on logging your weight for 7 days straight!',
-        isRead: false,
-        createdAt: new Date()
-      },
-      {
-        id: '2',
-        type: 'milestone',
-        title: '🌟 25% to Goal',
-        message: 'You\'re a quarter of the way to your goal weight. Keep it up!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 86400000)
-      }
-    ];
-
-    setNotifications(sampleNotifications);
-  }, []);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -56,7 +33,7 @@ export const NotificationSystem = ({ userId }: NotificationSystemProps) => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+    onMarkAsRead(id);
     toast({
       title: "Notification marked as read",
       description: "The notification has been removed from your list.",

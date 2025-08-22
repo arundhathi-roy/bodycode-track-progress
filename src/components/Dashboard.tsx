@@ -30,6 +30,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 
+interface Notification {
+  id: string;
+  type: 'achievement' | 'reminder' | 'milestone' | 'tip';
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
 const Dashboard = () => {
   const { signOut, user } = useAuth();
   const isMobile = useIsMobile();
@@ -38,6 +47,7 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [recentEntries, setRecentEntries] = useState<Array<{ id: string; weight: number; entry_date: string; notes?: string }>>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Real data states
   const [userProfile, setUserProfile] = useState<{
@@ -78,6 +88,30 @@ const Dashboard = () => {
     setWeightUnit(newUnit);
     localStorage.setItem('weightUnit', newUnit);
   };
+
+  // Initialize notifications
+  useEffect(() => {
+    const sampleNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'achievement',
+        title: '🎉 7-Day Streak!',
+        message: 'Congratulations on logging your weight for 7 days straight!',
+        isRead: false,
+        createdAt: new Date()
+      },
+      {
+        id: '2',
+        type: 'milestone',
+        title: '🌟 25% to Goal',
+        message: 'You\'re a quarter of the way to your goal weight. Keep it up!',
+        isRead: false,
+        createdAt: new Date(Date.now() - 86400000)
+      }
+    ];
+
+    setNotifications(sampleNotifications);
+  }, []);
 
   // Fetch user data
   useEffect(() => {
@@ -236,6 +270,14 @@ const Dashboard = () => {
     }
   };
 
+  // Handle notification mark as read
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
+
+  // Calculate unread count
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
@@ -289,12 +331,14 @@ const Dashboard = () => {
                       >
                         <Bell className="h-4 w-4" />
                         {/* Badge for unread count */}
-                        <Badge 
-                          variant="destructive" 
-                          className="absolute -top-2 -right-2 h-5 w-5 text-xs p-0 flex items-center justify-center min-w-5"
-                        >
-                          2
-                        </Badge>
+                        {unreadCount > 0 && (
+                          <Badge 
+                            variant="destructive" 
+                            className="absolute -top-2 -right-2 h-5 w-5 text-xs p-0 flex items-center justify-center min-w-5"
+                          >
+                            {unreadCount}
+                          </Badge>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
@@ -302,7 +346,11 @@ const Dashboard = () => {
                       align="end"
                       side="bottom"
                     >
-                      <NotificationSystem userId={user.id} />
+                      <NotificationSystem 
+                        userId={user.id} 
+                        notifications={notifications}
+                        onMarkAsRead={markNotificationAsRead}
+                      />
                     </PopoverContent>
                   </Popover>
                 )}
