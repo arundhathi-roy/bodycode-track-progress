@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
@@ -115,6 +116,38 @@ const Dashboard = () => {
       console.error('Error updating height:', error);
     }
   };
+
+  // Handle goal weight updates
+  const handleGoalWeightUpdate = async (newGoalWeight: number) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ goal_weight: newGoalWeight })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setUserProfile(prev => prev ? { ...prev, goal_weight: newGoalWeight } : null);
+    } catch (error) {
+      console.error('Error updating goal weight:', error);
+    }
+  };
+
+  // Calculate healthy weight range based on BMI
+  const getHealthyWeightRange = () => {
+    if (!height) return { min: 100, max: 250 }; // Default range if no height
+    
+    const heightSquared = height * height;
+    const minHealthyWeight = Math.round((18.5 * heightSquared) / 703);
+    const maxHealthyWeight = Math.round((24.9 * heightSquared) / 703);
+    
+    return { min: minHealthyWeight, max: maxHealthyWeight };
+  };
+
+  const healthyRange = getHealthyWeightRange();
 
   if (isLoading) {
     return (
@@ -271,7 +304,7 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold text-foreground">Goal Progress</h3>
                 <Target className="h-5 w-5 text-primary" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
                     Current: {currentWeight ? `${currentWeight} lbs` : 'No data'}
@@ -280,11 +313,35 @@ const Dashboard = () => {
                     Goal: {goalWeight ? `${goalWeight} lbs` : 'Not set'}
                   </span>
                 </div>
+                
+                {/* Goal Weight Slider */}
+                {height && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Healthy range: {healthyRange.min}-{healthyRange.max} lbs</span>
+                      <span>BMI: 18.5-24.9</span>
+                    </div>
+                    <Slider
+                      value={[goalWeight || healthyRange.min]}
+                      onValueChange={(value) => handleGoalWeightUpdate(value[0])}
+                      max={healthyRange.max}
+                      min={healthyRange.min}
+                      step={0.5}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <span className="text-sm font-medium text-primary">
+                        {goalWeight ? `${goalWeight} lbs` : 'Set your goal'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
                 <Progress value={Math.min(progressToGoal, 100)} className="h-3" />
                 <p className="text-sm text-center text-muted-foreground">
                   {currentWeight && goalWeight 
                     ? `${Math.max(0, currentWeight - goalWeight).toFixed(1)} lbs to go`
-                    : 'Set your goal weight to track progress'
+                    : height ? 'Use the slider above to set your goal weight' : 'Set your height first to enable goal setting'
                   }
                 </p>
               </div>
