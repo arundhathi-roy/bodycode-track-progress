@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      weight_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          entry_date: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

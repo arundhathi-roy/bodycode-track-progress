@@ -5,14 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Scale, StickyNote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const WeightEntryForm = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [weight, setWeight] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!weight) {
@@ -24,16 +28,56 @@ const WeightEntryForm = () => {
       return;
     }
 
-    // Here would be the actual submission logic
-    toast({
-      title: "Weight logged successfully!",
-      description: `${weight} lbs recorded for ${new Date(date).toLocaleDateString()}`,
-    });
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to record your weight.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    // Reset form
-    setWeight("");
-    setNotes("");
-    setDate(new Date().toISOString().split('T')[0]);
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('weight_entries')
+        .insert([
+          {
+            user_id: user.id,
+            weight: parseFloat(weight),
+            entry_date: date,
+            notes: notes.trim() || null
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Weight logged successfully!",
+        description: `${weight} lbs recorded for ${new Date(date).toLocaleDateString()}`,
+      });
+
+      // Reset form
+      setWeight("");
+      setNotes("");
+      setDate(new Date().toISOString().split('T')[0]);
+      
+      // Trigger a page refresh to update the dashboard
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error logging weight:', error);
+      toast({
+        title: "Error logging weight",
+        description: "Please try again. Make sure you're connected to the internet.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -86,9 +130,10 @@ const WeightEntryForm = () => {
 
       <Button 
         type="submit" 
-        className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-soft"
+        disabled={isLoading}
+        className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-soft disabled:opacity-50"
       >
-        Log Weight
+        {isLoading ? "Saving..." : "Log Weight"}
       </Button>
     </form>
   );
