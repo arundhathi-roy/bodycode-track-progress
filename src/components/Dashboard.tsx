@@ -10,7 +10,6 @@ import { RecentWeightEntries } from "./RecentWeightEntries";
 import { BMICard } from "./BMICard";
 import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
-import { LogoProcessor } from "./LogoProcessor";
 import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
 import { WeightInsights } from "./insights/WeightInsights";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
@@ -34,7 +33,6 @@ import { Badge } from "@/components/ui/badge";
 const Dashboard = () => {
   const { signOut, user } = useAuth();
   const isMobile = useIsMobile();
-  const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [weightUnit, setWeightUnit] = useState<'lbs' | 'kg'>('lbs');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -326,14 +324,11 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
           {/* Main Header */}
           <div className="text-center mb-6 md:mb-8">
-            {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
-            {processedLogoUrl && (
-              <img 
-                src={processedLogoUrl} 
-                alt="BodyCode Logo" 
-                className="h-12 md:h-16 mx-auto mb-4"
-              />
-            )}
+            <img 
+              src="/lovable-uploads/b22f87c1-4124-4fef-9ccc-c468f0ce09e5.png" 
+              alt="BodyCode Logo" 
+              className="h-16 md:h-20 mx-auto mb-4"
+            />
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
               Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
             </h1>
