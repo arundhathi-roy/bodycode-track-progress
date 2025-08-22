@@ -108,6 +108,68 @@ All colors MUST be HSL.
   }
 }
 
+@layer utilities {
+  /* Celebration animations */
+  .animate-bounce-in {
+    animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .animate-celebrate {
+    animation: celebrate 0.6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3) translateY(-100px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes celebrate {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg); 
+  }
+  25% { 
+    transform: scale(1.1) rotate(-5deg); 
+  }
+  50% { 
+    transform: scale(1.2) rotate(5deg); 
+  }
+  75% { 
+    transform: scale(1.1) rotate(-3deg); 
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    opacity: 1;
+    text-shadow: 0 0 5px rgba(45, 127, 100, 0.5);
+  }
+  50% { 
+    opacity: 0.8;
+    text-shadow: 0 0 20px rgba(45, 127, 100, 0.8), 0 0 30px rgba(45, 127, 100, 0.4);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

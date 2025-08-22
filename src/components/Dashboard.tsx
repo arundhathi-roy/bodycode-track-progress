@@ -12,11 +12,11 @@ import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
 import { LogoProcessor } from "./LogoProcessor";
 import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
-import { GoalCelebration } from "./celebrations/GoalCelebration";
 import { WeightInsights } from "./insights/WeightInsights";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
 import { EnhancedWeightChart } from "./charts/EnhancedWeightChart";
 import { SwipeableEntry } from "./mobile/SwipeableEntry";
+import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
 import { DataExport } from "./data-management/DataExport";
 import { ProgressInsights } from "./help/ProgressInsights";
@@ -255,6 +255,15 @@ const Dashboard = () => {
           }}
         />
       )}
+
+      {/* Smart Celebrations with Confetti */}
+      <SmartCelebrations 
+        currentWeight={currentWeight}
+        goalWeight={goalWeight}
+        startWeight={startWeight}
+        recentEntries={recentEntries}
+        weightUnit={weightUnit}
+      />
 
       {/* Goal celebrations are triggered automatically by the components when goals are reached */}
 
