@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
+import { RecentWeightEntries } from "./RecentWeightEntries";
 import { BMICard } from "./BMICard";
 import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
@@ -296,7 +297,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Goal Progress & Quick Entry */}
+          {/* Goal Progress */}
           <div className="space-y-6">
             {/* Goal Progress */}
             <Card className="p-6 bg-gradient-card shadow-medium border-0">
@@ -347,10 +348,10 @@ const Dashboard = () => {
               </div>
             </Card>
 
-            {/* Quick Weight Entry */}
-            <Card className="p-6 bg-gradient-card shadow-medium border-0" data-section="quick-entry">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Quick Entry</h3>
-              <WeightEntryForm />
+            {/* Recent Weight Entries */}
+            <Card className="p-6 bg-gradient-card shadow-medium border-0">
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Recent Entries</h3>
+              <RecentWeightEntries />
             </Card>
           </div>
 
