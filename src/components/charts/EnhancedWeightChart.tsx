@@ -7,7 +7,7 @@ import { CalendarDays, ZoomIn, ZoomOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { ChartSkeleton } from "@/components/skeletons/ChartSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WeightEntry {
   weight: number;
@@ -112,7 +112,14 @@ export const EnhancedWeightChart = ({
   };
 
   if (isLoading) {
-    return <ChartSkeleton />;
+    return (
+      <Card className="p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-80 w-full" />
+        </div>
+      </Card>
+    );
   }
 
   if (chartData.length === 0) {
