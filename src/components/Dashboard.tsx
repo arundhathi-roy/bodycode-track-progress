@@ -398,76 +398,88 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-          <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-soft border-0 col-span-1 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Current Weight</p>
-                  <Select value={weightUnit} onValueChange={handleUnitChange}>
-                    <SelectTrigger className="w-14 sm:w-16 h-5 sm:h-6 text-xs bg-background/50 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="min-w-0 w-14 sm:w-16 bg-background border-border z-50">
-                      <SelectItem value="lbs" className="text-xs">lbs</SelectItem>
-                      <SelectItem value="kg" className="text-xs">kg</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3">
-                  {formatWeight(currentWeight)}
-                </p>
-                
-                {/* Log Weight and Export Buttons */}
-                <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                  {isMobile ? (
-                    <Button 
-                      onClick={() => setShowBottomSheet(true)}
-                      size="sm"
-                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white w-full sm:flex-1 text-xs sm:text-sm"
-                    >
-                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                      Log Weight
-                    </Button>
-                  ) : (
+          <Card className="p-4 sm:p-5 md:p-6 bg-gradient-card shadow-soft border-0 col-span-1 sm:col-span-2 lg:col-span-1 overflow-hidden relative">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-8 translate-x-8"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-primary/3 rounded-full translate-y-6 -translate-x-6"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">Current Weight</h3>
+                    <Select value={weightUnit} onValueChange={handleUnitChange}>
+                      <SelectTrigger className="w-16 sm:w-18 h-7 text-xs bg-background/80 border-border/50 rounded-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="min-w-0 w-16 sm:w-18 bg-background border-border z-50">
+                        <SelectItem value="lbs" className="text-xs">lbs</SelectItem>
+                        <SelectItem value="kg" className="text-xs">kg</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-tight">
+                      {formatWeight(currentWeight)}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-1 bg-gradient-to-r from-primary to-primary/60 rounded-full"></div>
+                      <span className="text-xs text-muted-foreground">Track your progress</span>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    {isMobile ? (
+                      <Button 
+                        onClick={() => setShowBottomSheet(true)}
+                        className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 hover:from-blue-600 hover:via-purple-600 hover:to-red-600 text-white rounded-xl py-3 h-auto font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Log Today's Weight
+                      </Button>
+                    ) : (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 hover:from-blue-600 hover:via-purple-600 hover:to-red-600 text-white rounded-xl py-3 h-auto font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Log Today's Weight
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
+                          <DialogHeader>
+                            <DialogTitle>Log Today's Weight</DialogTitle>
+                          </DialogHeader>
+                          <WeightEntryForm weightUnit={weightUnit} />
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    
+                    {/* Export Button */}
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
-                          size="sm"
-                          className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white w-full sm:flex-1 text-xs sm:text-sm"
-                        >
-                          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                          <span className="hidden sm:inline">Log today's weight</span>
-                          <span className="sm:hidden">Log Weight</span>
+                        <Button variant="outline" className="w-full rounded-xl border-border/50 bg-background/50 hover:bg-background/80 backdrop-blur-sm transition-all duration-300">
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Data
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
                         <DialogHeader>
-                          <DialogTitle>Log Today's Weight</DialogTitle>
+                          <DialogTitle>Export Weight Data</DialogTitle>
                         </DialogHeader>
-                        <WeightEntryForm weightUnit={weightUnit} />
+                        <DataExport weightUnit={weightUnit} />
                       </DialogContent>
                     </Dialog>
-                  )}
-                  
-                  {/* Export Button */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="gap-1 w-full sm:w-auto text-xs sm:text-sm">
-                        <Download className="h-3 w-3" />
-                        <span className="hidden sm:inline">Export</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
-                      <DialogHeader>
-                        <DialogTitle>Export Weight Data</DialogTitle>
-                      </DialogHeader>
-                      <DataExport weightUnit={weightUnit} />
-                    </DialogContent>
-                  </Dialog>
+                  </div>
                 </div>
-              </div>
-              <div className="p-2 sm:p-2 md:p-3 bg-primary/10 rounded-full ml-2 sm:ml-3">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
+                
+                {/* Icon */}
+                <div className="p-3 sm:p-4 bg-primary/10 rounded-2xl ml-3 sm:ml-4 backdrop-blur-sm">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                </div>
               </div>
             </div>
           </Card>
