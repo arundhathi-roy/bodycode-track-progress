@@ -7,11 +7,13 @@ import { WeightEntryForm } from "./WeightEntryForm";
 import { BMICard } from "./BMICard";
 import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
+import { LogoProcessor } from "./LogoProcessor";
 import { useState } from "react";
 
 const Dashboard = () => {
   // Height state (in inches)
   const [height, setHeight] = useState<number | null>(68); // Default 5'8" for demo
+  const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
   
   // Mock data for demonstration
   const currentWeight = 165.2;
@@ -28,11 +30,14 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/18716076-4e90-48b2-8969-fd4bdea3b01f.png" 
-            alt="BodyCode Logo" 
-            className="h-16 mx-auto mb-4"
-          />
+          {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
+          {processedLogoUrl && (
+            <img 
+              src={processedLogoUrl} 
+              alt="BodyCode Logo" 
+              className="h-16 mx-auto mb-4"
+            />
+          )}
           <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back!</h1>
           <p className="text-muted-foreground">Track your journey to a healthier you</p>
         </div>
