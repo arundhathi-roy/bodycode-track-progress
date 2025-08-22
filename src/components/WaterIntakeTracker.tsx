@@ -189,7 +189,7 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
             <Minus className="h-4 w-4" />
           </Button>
           
-          <div className="flex items-center justify-center text-center gap-2">
+          <div className="flex items-center justify-center text-center gap-3">
             <Wine className="h-8 w-8 text-primary/60" />
             <div>
               <div className="text-3xl font-bold text-primary mb-1">
@@ -198,6 +198,37 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
               <div className="text-sm text-muted-foreground">
                 glass{todayGlasses !== 1 ? 'es' : ''} today
               </div>
+            </div>
+            {/* Animated Water Glass */}
+            <div className={`transition-all duration-300 ${todayGlasses > 0 ? 'animate-bounce' : ''}`}>
+              <svg 
+                width="32" 
+                height="32" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className={`text-blue-500 transition-all duration-300 ${
+                  todayGlasses >= recommendedGlasses ? 'text-green-500 scale-110' : 
+                  todayGlasses >= recommendedGlasses * 0.75 ? 'text-blue-500 scale-105' :
+                  todayGlasses >= recommendedGlasses * 0.5 ? 'text-blue-400' : 'text-gray-400'
+                }`}
+              >
+                {/* Water Glass Shape */}
+                <path d="M5 12V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v5M5 12l1 6h12l1-6M5 12h14" />
+                {/* Water Level */}
+                {todayGlasses > 0 && (
+                  <path 
+                    d={`M6 ${20 - Math.min(todayGlasses / recommendedGlasses * 8, 8)}h12`}
+                    stroke="currentColor" 
+                    strokeWidth="6" 
+                    opacity="0.6"
+                    className="animate-pulse"
+                  />
+                )}
+              </svg>
             </div>
           </div>
           
