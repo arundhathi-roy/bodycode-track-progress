@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Minus, Droplets, Download, Wine } from 'lucide-react';
+import { Plus, Minus, Droplets, Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -190,7 +190,6 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
           </Button>
           
           <div className="flex items-center justify-center text-center gap-2">
-            <Wine className="h-5 w-5 text-primary/60" />
             <div>
               <div className="text-xl font-bold text-primary">
                 {todayGlasses}
@@ -199,8 +198,8 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
                 glass{todayGlasses !== 1 ? 'es' : ''}
               </div>
             </div>
-            {/* Animated Water Glass - Smaller */}
-            <div className={`transition-all duration-300 ${todayGlasses > 0 ? 'animate-bounce' : ''}`}>
+            {/* Static Water Glass */}
+            <div className="transition-all duration-300">
               <svg 
                 width="20" 
                 height="20" 
@@ -225,7 +224,6 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
                     stroke="currentColor" 
                     strokeWidth="6" 
                     opacity="0.6"
-                    className="animate-pulse"
                   />
                 )}
               </svg>
