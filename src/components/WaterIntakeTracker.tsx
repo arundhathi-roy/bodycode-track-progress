@@ -126,16 +126,16 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
   }
 
   return (
-    <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-3 md:p-4 bg-gradient-card shadow-medium border-0 h-fit">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-foreground">Water Intake</h3>
-          <Droplets className="h-5 w-5 text-primary" />
+          <h3 className="text-base font-semibold text-foreground">Water Intake</h3>
+          <Droplets className="h-4 w-4 text-primary" />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
+            <Button size="sm" variant="outline" className="gap-1 text-xs px-2 py-1">
+              <Download className="h-3 w-3" />
               History
             </Button>
           </DialogTrigger>
@@ -157,53 +157,53 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
         </Dialog>
       </div>
 
-      <div className="space-y-4">
-        {/* Today's Progress */}
-        <div className="bg-primary/5 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Today's Goal</span>
-            <span className="text-sm text-muted-foreground">
+      <div className="space-y-3">
+        {/* Today's Progress - Compact */}
+        <div className="bg-primary/5 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-medium text-foreground">Today's Goal</span>
+            <span className="text-xs text-muted-foreground">
               {todayGlasses}/{recommendedGlasses} glasses
             </span>
           </div>
-          <Progress value={progressPercentage} className="h-2 mb-2" />
+          <Progress value={progressPercentage} className="h-1.5 mb-1" />
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Based on {weightUnit === 'lbs' ? currentWeight : (currentWeight! * 2.20462).toFixed(0)} lbs body weight
+              Based on {weightUnit === 'lbs' ? currentWeight : (currentWeight! * 2.20462).toFixed(0)} lbs
             </span>
-            <Badge variant={progressPercentage >= 100 ? 'default' : 'secondary'} className="text-xs">
+            <Badge variant={progressPercentage >= 100 ? 'default' : 'secondary'} className="text-xs px-1.5 py-0.5">
               {progressPercentage.toFixed(0)}%
             </Badge>
           </div>
         </div>
 
-        {/* Interactive Controls */}
-        <div className="flex items-center justify-center gap-4">
+        {/* Interactive Controls - Compact */}
+        <div className="flex items-center justify-center gap-3">
           <Button
             variant="outline"
             size="icon"
             onClick={removeGlass}
             disabled={todayGlasses === 0}
-            className="h-12 w-12 rounded-full"
+            className="h-8 w-8 rounded-full"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-3 w-3" />
           </Button>
           
-          <div className="flex items-center justify-center text-center gap-3">
-            <Wine className="h-8 w-8 text-primary/60" />
+          <div className="flex items-center justify-center text-center gap-2">
+            <Wine className="h-5 w-5 text-primary/60" />
             <div>
-              <div className="text-3xl font-bold text-primary mb-1">
+              <div className="text-xl font-bold text-primary">
                 {todayGlasses}
               </div>
-              <div className="text-sm text-muted-foreground">
-                glass{todayGlasses !== 1 ? 'es' : ''} today
+              <div className="text-xs text-muted-foreground">
+                glass{todayGlasses !== 1 ? 'es' : ''}
               </div>
             </div>
-            {/* Animated Water Glass */}
+            {/* Animated Water Glass - Smaller */}
             <div className={`transition-all duration-300 ${todayGlasses > 0 ? 'animate-bounce' : ''}`}>
               <svg 
-                width="32" 
-                height="32" 
+                width="20" 
+                height="20" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
@@ -236,19 +236,19 @@ export const WaterIntakeTracker = ({ currentWeight, weightUnit }: WaterIntakeTra
             variant="default"
             size="icon"
             onClick={addGlass}
-            className="h-12 w-12 rounded-full"
+            className="h-8 w-8 rounded-full"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3" />
           </Button>
         </div>
 
-        {/* Status Message */}
+        {/* Status Message - Compact */}
         <div className="text-center">
-          <p className="text-sm font-medium text-foreground">{getStatusMessage()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs font-medium text-foreground">{getStatusMessage()}</p>
+          <p className="text-xs text-muted-foreground">
             {recommendedGlasses - todayGlasses > 0 
-              ? `${recommendedGlasses - todayGlasses} more glass${recommendedGlasses - todayGlasses !== 1 ? 'es' : ''} to reach your goal`
-              : 'Goal achieved! Stay hydrated! 🌊'
+              ? `${recommendedGlasses - todayGlasses} more to go`
+              : 'Goal achieved! 🌊'
             }
           </p>
         </div>
