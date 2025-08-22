@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -11,6 +11,17 @@ import { BMICard } from "./BMICard";
 import { HeightSetup } from "./HeightSetup";
 import { BMIChart } from "./BMIChart";
 import { LogoProcessor } from "./LogoProcessor";
+import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
+import { GoalCelebration } from "./celebrations/GoalCelebration";
+import { WeightInsights } from "./insights/WeightInsights";
+import { OnboardingWizard } from "./onboarding/OnboardingWizard";
+import { EnhancedWeightChart } from "./charts/EnhancedWeightChart";
+import { SwipeableEntry } from "./mobile/SwipeableEntry";
+import { BottomSheet } from "./mobile/BottomSheet";
+import { DataExport } from "./data-management/DataExport";
+import { ProgressInsights } from "./help/ProgressInsights";
+import { NotificationSystem } from "./notifications/NotificationSystem";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,9 +29,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 const Dashboard = () => {
   const { signOut, user } = useAuth();
+  const isMobile = useIsMobile();
   const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [weightUnit, setWeightUnit] = useState<'lbs' | 'kg'>('lbs');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [recentEntries, setRecentEntries] = useState<Array<{ id: string; weight: number; entry_date: string; notes?: string }>>([]);
   
   // Real data states
   const [userProfile, setUserProfile] = useState<{
@@ -83,7 +98,7 @@ const Dashboard = () => {
         // Fetch recent weight entries for calculations
         const { data: entries, error: entriesError } = await supabase
           .from('weight_entries')
-          .select('weight, entry_date')
+          .select('id, weight, entry_date, notes')
           .eq('user_id', user.id)
           .order('entry_date', { ascending: false })
           .limit(10);
@@ -92,6 +107,12 @@ const Dashboard = () => {
           console.error('Error fetching weight entries:', entriesError);
         } else if (entries) {
           setWeightEntries(entries);
+          setRecentEntries(entries);
+        }
+
+        // Check if user is new (no height set) and show onboarding
+        if (!profile?.height_inches) {
+          setShowOnboarding(true);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -180,6 +201,38 @@ const Dashboard = () => {
 
   const healthyRange = getHealthyWeightRange();
 
+  const refreshData = () => {
+    // Refetch user data after updates
+    if (user) {
+      const fetchUserData = async () => {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('current_weight, height_inches, goal_weight')
+            .eq('user_id', user.id)
+            .single();
+
+          if (profile) setUserProfile(profile);
+
+          const { data: entries } = await supabase
+            .from('weight_entries')
+            .select('id, weight, entry_date, notes')
+            .eq('user_id', user.id)
+            .order('entry_date', { ascending: false })
+            .limit(10);
+
+          if (entries) {
+            setWeightEntries(entries);
+            setRecentEntries(entries);
+          }
+        } catch (error) {
+          console.error('Error refreshing data:', error);
+        }
+      };
+      fetchUserData();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
@@ -192,40 +245,57 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="text-center flex-1">
-            {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
-            {processedLogoUrl && (
-              <img 
-                src={processedLogoUrl} 
-                alt="BodyCode Logo" 
-                className="h-16 mx-auto mb-4"
-              />
-            )}
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
-            </h1>
-            <p className="text-muted-foreground">Crack the Code to a Better Body</p>
+    <>
+      {/* Onboarding for new users */}
+      {showOnboarding && (
+        <OnboardingWizard 
+          onComplete={() => {
+            setShowOnboarding(false);
+            refreshData();
+          }}
+        />
+      )}
+
+      {/* Goal celebrations are triggered automatically by the components when goals are reached */}
+
+      {/* Notification system */}
+      {user && <NotificationSystem userId={user.id} />}
+
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8 space-y-4 md:space-y-0">
+            <div className="text-center md:text-left flex-1">
+              {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
+              {processedLogoUrl && (
+                <img 
+                  src={processedLogoUrl} 
+                  alt="BodyCode Logo" 
+                  className="h-12 md:h-16 mx-auto md:mx-0 mb-4"
+                />
+              )}
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+              </h1>
+              <p className="text-muted-foreground">Crack the Code to a Better Body</p>
+            </div>
+            
+            <div className="flex items-center gap-2 md:gap-3">
+              <DataExport weightUnit={weightUnit} />
+              <Button 
+                onClick={signOut}
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-3 mt-4">            
-            <Button 
-              onClick={signOut}
-              variant="outline"
-              size="sm"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-card shadow-soft border-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -240,50 +310,54 @@ const Dashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-xl md:text-2xl font-bold text-foreground">
                   {formatWeight(currentWeight)}
                 </p>
               </div>
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Calendar className="h-6 w-6 text-primary" />
+              <div className="p-2 md:p-3 bg-primary/10 rounded-full">
+                <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-card shadow-soft border-0">
+          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Yesterday's Change</p>
-                  <div className="flex items-center gap-2">
-                    {changeFromYesterday !== null ? (
-                      <>
-                        <p className={`text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
-                          {changeFromYesterday > 0 ? '+' : ''}{convertWeight(changeFromYesterday, 'lbs', weightUnit).toFixed(1)} {weightUnit}
-                        </p>
-                        {changeFromYesterday < 0 ? (
-                          <TrendingDown className="h-5 w-5 text-success" />
-                        ) : (
-                          <TrendingUp className="h-5 w-5 text-warning" />
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-2xl font-bold text-muted-foreground">No data</p>
-                    )}
-                  </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm text-muted-foreground">Yesterday's Change</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {changeFromYesterday !== null ? (
+                    <>
+                      <p className={`text-xl md:text-2xl font-bold ${changeFromYesterday < 0 ? 'text-success' : 'text-warning'}`}>
+                        {changeFromYesterday > 0 ? '+' : ''}{convertWeight(changeFromYesterday, 'lbs', weightUnit).toFixed(1)} {weightUnit}
+                      </p>
+                      {changeFromYesterday < 0 ? (
+                        <TrendingDown className="h-5 w-5 text-success" />
+                      ) : (
+                        <TrendingUp className="h-5 w-5 text-warning" />
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xl md:text-2xl font-bold text-muted-foreground">No data</p>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-card shadow-soft border-0">
+          <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Progress</p>
-                <p className={`text-2xl font-bold ${totalChange && totalChange < 0 ? 'text-success' : totalChange && totalChange > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm text-muted-foreground">Total Progress</p>
+                </div>
+                <p className={`text-xl md:text-2xl font-bold ${totalChange && totalChange < 0 ? 'text-success' : totalChange && totalChange > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
                   {totalChange !== null ? `${totalChange > 0 ? '+' : ''}${convertWeight(totalChange, 'lbs', weightUnit).toFixed(1)} ${weightUnit}` : 'No data'}
                 </p>
               </div>
-              <div className="p-3 bg-success/10 rounded-full">
-                <Target className="h-6 w-6 text-success" />
+              <div className="p-2 md:p-3 bg-success/10 rounded-full">
+                <Target className="h-5 w-5 md:h-6 md:w-6 text-success" />
               </div>
             </div>
           </Card>
@@ -305,46 +379,91 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Weight Chart */}
-          <Card className="p-6 bg-gradient-card shadow-medium border-0">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Weight Trend</h2>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
-                  >
-                    Log today's weight
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Log Today's Weight</DialogTitle>
-                  </DialogHeader>
-                  <WeightEntryForm weightUnit={weightUnit} />
-                </DialogContent>
-              </Dialog>
+        {/* Weight Insights */}
+        <div className="mb-6 md:mb-8">
+          <WeightInsights 
+            entries={weightEntries}
+            currentWeight={currentWeight}
+            goalWeight={goalWeight}
+            weightUnit={weightUnit}
+          />
+        </div>
+
+        {/* Progress Insights */}
+        <div className="mb-6 md:mb-8">
+          <ProgressInsights 
+            currentWeight={currentWeight}
+            goalWeight={goalWeight}
+            weightEntries={weightEntries}
+            weightUnit={weightUnit}
+          />
+        </div>
+
+        {/* Quick Actions */}
+        {currentWeight && (
+          <div className="mb-6 md:mb-8">
+            <QuickWeightActions 
+              currentWeight={currentWeight}
+              weightUnit={weightUnit}
+              onWeightUpdate={refreshData}
+              recentEntries={recentEntries}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
+          {/* Enhanced Weight Chart */}
+          <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
+              <h2 className="text-lg md:text-xl font-semibold text-foreground">Weight Trend</h2>
+              {isMobile ? (
+                <Button 
+                  onClick={() => setShowBottomSheet(true)}
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Log Weight
+                </Button>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
+                    >
+                      Log today's weight
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Log Today's Weight</DialogTitle>
+                    </DialogHeader>
+                    <WeightEntryForm weightUnit={weightUnit} />
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
-            <WeightChart weightUnit={weightUnit} />
+            <EnhancedWeightChart weightUnit={weightUnit} goalWeight={goalWeight} />
           </Card>
 
           {/* BMI Chart */}
           {height && (
-            <Card className="p-6 bg-gradient-card shadow-medium border-0">
-              <h2 className="text-xl font-semibold mb-4 text-foreground">BMI Trend</h2>
+            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
+              <h2 className="text-lg md:text-xl font-semibold mb-4 text-foreground">BMI Trend</h2>
               <BMIChart height={height} />
             </Card>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* Goal Progress */}
           <div className="space-y-6">
             {/* Goal Progress */}
-            <Card className="p-6 bg-gradient-card shadow-medium border-0">
+            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Goal Progress</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-foreground">Goal Progress</h3>
+                </div>
                 <Target className="h-5 w-5 text-primary" />
               </div>
               <div className="space-y-4">
@@ -360,8 +479,8 @@ const Dashboard = () => {
                 {/* Goal Weight Slider */}
                 {height && (
                   <div className="space-y-3">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Healthy range: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}</span>
+                    <div className="flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0">
+                      <span>Healthy: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}</span>
                       <span>BMI: 18.5-24.9</span>
                     </div>
                     <Slider
@@ -391,9 +510,40 @@ const Dashboard = () => {
             </Card>
 
             {/* Recent Weight Entries */}
-            <Card className="p-6 bg-gradient-card shadow-medium border-0">
+            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Recent Entries</h3>
-              <RecentWeightEntries weightUnit={weightUnit} />
+              {isMobile ? (
+                <div className="space-y-2">
+                  {recentEntries.slice(0, 5).map((entry) => (
+                    <SwipeableEntry
+                      key={entry.id}
+                      onEdit={() => {/* Edit functionality */}}
+                      onDelete={async () => {
+                        try {
+                          await supabase
+                            .from('weight_entries')
+                            .delete()
+                            .eq('id', entry.id);
+                          refreshData();
+                        } catch (error) {
+                          console.error('Error deleting entry:', error);
+                        }
+                      }}
+                    >
+                      <div className="flex justify-between items-center p-3">
+                        <span className="text-sm font-medium">
+                          {formatWeight(entry.weight)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(entry.entry_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </SwipeableEntry>
+                  ))}
+                </div>
+              ) : (
+                <RecentWeightEntries weightUnit={weightUnit} />
+              )}
             </Card>
           </div>
 
@@ -404,8 +554,20 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Mobile Bottom Sheet for Weight Entry */}
+        {isMobile && (
+          <BottomSheet
+            isOpen={showBottomSheet}
+            onClose={() => setShowBottomSheet(false)}
+            title="Log Today's Weight"
+          >
+            <WeightEntryForm weightUnit={weightUnit} />
+          </BottomSheet>
+        )}
       </div>
     </div>
+    </>
   );
 };
 
