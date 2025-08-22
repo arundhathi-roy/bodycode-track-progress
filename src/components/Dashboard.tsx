@@ -4,13 +4,21 @@ import { Progress } from "@/components/ui/progress";
 import { TrendingDown, TrendingUp, Target, Calendar } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
+import { BMICard } from "./BMICard";
+import { HeightSetup } from "./HeightSetup";
+import { BMIChart } from "./BMIChart";
+import { useState } from "react";
 
 const Dashboard = () => {
+  // Height state (in inches)
+  const [height, setHeight] = useState<number | null>(68); // Default 5'8" for demo
+  
   // Mock data for demonstration
   const currentWeight = 165.2;
   const yesterdayWeight = 166.1;
   const startWeight = 180.0;
   const goalWeight = 160.0;
+  const previousBMI = height ? ((yesterdayWeight / (height * height)) * 703) : null;
   const changeFromYesterday = currentWeight - yesterdayWeight;
   const totalChange = currentWeight - startWeight;
   const progressToGoal = ((startWeight - currentWeight) / (startWeight - goalWeight)) * 100;
@@ -30,7 +38,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
               <div>
@@ -74,15 +82,41 @@ const Dashboard = () => {
               </div>
             </div>
           </Card>
+
+          {/* BMI Card */}
+          {height && (
+            <BMICard 
+              currentWeight={currentWeight} 
+              height={height} 
+              previousBMI={previousBMI} 
+            />
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Height Setup (if not set) */}
+        {!height && (
+          <div className="mb-8">
+            <HeightSetup onHeightSet={setHeight} />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Weight Chart */}
           <Card className="p-6 bg-gradient-card shadow-medium border-0">
             <h2 className="text-xl font-semibold mb-4 text-foreground">Weight Trend</h2>
             <WeightChart />
           </Card>
 
+          {/* BMI Chart */}
+          {height && (
+            <Card className="p-6 bg-gradient-card shadow-medium border-0">
+              <h2 className="text-xl font-semibold mb-4 text-foreground">BMI Trend</h2>
+              <BMIChart height={height} />
+            </Card>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Goal Progress & Quick Entry */}
           <div className="space-y-6">
             {/* Goal Progress */}
@@ -109,6 +143,13 @@ const Dashboard = () => {
               <WeightEntryForm />
             </Card>
           </div>
+
+          {/* Height Setup Card */}
+          {height && (
+            <div className="space-y-6">
+              <HeightSetup onHeightSet={setHeight} currentHeight={height} />
+            </div>
+          )}
         </div>
       </div>
     </div>
