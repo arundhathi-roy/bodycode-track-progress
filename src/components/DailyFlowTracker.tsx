@@ -309,6 +309,13 @@ export const MenstrualCycleTracker = () => {
                     disabled={(date) => date > new Date()}
                     modifiers={modifiers}
                     modifiersStyles={modifiersStyles}
+                    onDayClick={(date) => {
+                      setSelectedDate(date);
+                      const existingEntry = getEntryForDate(date);
+                      if (existingEntry) {
+                        openEditDialog(existingEntry);
+                      }
+                    }}
                     className={cn("border rounded-md pointer-events-auto w-fit mx-auto")}
                     classNames={{
                       months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -324,7 +331,7 @@ export const MenstrualCycleTracker = () => {
                       head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
                       row: "flex w-full mt-2",
                       cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                      day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
+                      day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 cursor-pointer hover:bg-accent hover:rounded-md transition-colors",
                       day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                       day_today: "bg-accent text-accent-foreground",
                       day_outside: "text-muted-foreground opacity-50",
