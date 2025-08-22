@@ -59,7 +59,8 @@ const WeightEntryForm = ({ weightUnit = 'lbs' }: WeightEntryFormProps) => {
             user_id: user.id,
             weight: weightInLbs,
             entry_date: date,
-            notes: notes.trim() || null
+            notes: notes.trim() || null,
+            original_unit: weightUnit
           }
         ]);
 

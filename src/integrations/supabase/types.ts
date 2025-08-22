@@ -53,6 +53,7 @@ export type Database = {
           entry_date: string
           id: string
           notes: string | null
+          original_unit: string
           updated_at: string
           user_id: string
           weight: number
@@ -62,6 +63,7 @@ export type Database = {
           entry_date: string
           id?: string
           notes?: string | null
+          original_unit?: string
           updated_at?: string
           user_id: string
           weight: number
@@ -71,6 +73,7 @@ export type Database = {
           entry_date?: string
           id?: string
           notes?: string | null
+          original_unit?: string
           updated_at?: string
           user_id?: string
           weight?: number

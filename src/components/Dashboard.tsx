@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Settings } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -211,21 +211,7 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
           </div>
           
-          <div className="flex items-center gap-3 mt-4">
-            {/* Unit Selector */}
-            <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4 text-muted-foreground" />
-              <Select value={weightUnit} onValueChange={handleUnitChange}>
-                <SelectTrigger className="w-20 h-8 text-sm bg-background border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="min-w-0 w-20 bg-background border-border z-50">
-                  <SelectItem value="lbs" className="text-sm">lbs</SelectItem>
-                  <SelectItem value="kg" className="text-sm">kg</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
+          <div className="flex items-center gap-3 mt-4">            
             <Button 
               onClick={signOut}
               variant="outline"
@@ -242,7 +228,18 @@ const Dashboard = () => {
           <Card className="p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Current Weight</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm text-muted-foreground">Current Weight</p>
+                  <Select value={weightUnit} onValueChange={handleUnitChange}>
+                    <SelectTrigger className="w-16 h-6 text-xs bg-background/50 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="min-w-0 w-16 bg-background border-border z-50">
+                      <SelectItem value="lbs" className="text-xs">lbs</SelectItem>
+                      <SelectItem value="kg" className="text-xs">kg</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <p className="text-2xl font-bold text-foreground">
                   {formatWeight(currentWeight)}
                 </p>

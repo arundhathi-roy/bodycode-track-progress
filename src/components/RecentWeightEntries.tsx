@@ -11,6 +11,7 @@ interface WeightEntry {
   entry_date: string;
   notes?: string;
   created_at: string;
+  original_unit: string;
 }
 
 interface RecentWeightEntriesProps {
@@ -41,7 +42,7 @@ const RecentWeightEntries = ({ weightUnit = 'lbs' }: RecentWeightEntriesProps) =
       try {
         const { data, error } = await supabase
           .from('weight_entries')
-          .select('id, weight, entry_date, notes, created_at')
+          .select('id, weight, entry_date, notes, created_at, original_unit')
           .eq('user_id', user.id)
           .order('entry_date', { ascending: false })
           .order('created_at', { ascending: false })
@@ -154,6 +155,9 @@ const RecentWeightEntries = ({ weightUnit = 'lbs' }: RecentWeightEntriesProps) =
                   <Calendar className="h-3 w-3" />
                   {formatDate(entry.entry_date)}
                 </div>
+                <span className="text-xs px-1.5 py-0.5 bg-muted/50 rounded text-muted-foreground">
+                  entered as {entry.original_unit}
+                </span>
               </div>
               {entry.notes && (
                 <p className="text-sm text-muted-foreground mt-1 truncate max-w-48">
