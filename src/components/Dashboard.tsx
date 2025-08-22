@@ -259,39 +259,53 @@ const Dashboard = () => {
       {/* Goal celebrations are triggered automatically by the components when goals are reached */}
 
       {/* Notification system */}
-      {user && <NotificationSystem userId={user.id} />}
 
       <div className="min-h-screen bg-gradient-subtle">
-        <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8 space-y-4 md:space-y-0">
-            <div className="text-center md:text-left flex-1">
-              {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
-              {processedLogoUrl && (
-                <img 
-                  src={processedLogoUrl} 
-                  alt="BodyCode Logo" 
-                  className="h-12 md:h-16 mx-auto md:mx-0 mb-4"
-                />
-              )}
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
-              </h1>
-              <p className="text-muted-foreground">Crack the Code to a Better Body</p>
-            </div>
-            
-            <div className="flex items-center gap-2 md:gap-3">
-              <DataExport weightUnit={weightUnit} />
+        {/* Top Bar with Sign Out */}
+        <div className="border-b border-border/50 bg-background/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-3 max-w-7xl">
+            <div className="flex justify-end">
               <Button 
                 onClick={signOut}
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
+                className="bg-background/80"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
             </div>
           </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+          {/* Main Header */}
+          <div className="text-center mb-6 md:mb-8">
+            {!processedLogoUrl && <LogoProcessor onProcessed={setProcessedLogoUrl} />}
+            {processedLogoUrl && (
+              <img 
+                src={processedLogoUrl} 
+                alt="BodyCode Logo" 
+                className="h-12 md:h-16 mx-auto mb-4"
+              />
+            )}
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+            </h1>
+            <p className="text-muted-foreground">Crack the Code to a Better Body</p>
+            
+            {/* Data Export moved here */}
+            <div className="mt-4">
+              <DataExport weightUnit={weightUnit} />
+            </div>
+          </div>
+
+          {/* Notification System - Below Header */}
+          {user && (
+            <div className="mb-6 md:mb-8">
+              <NotificationSystem userId={user.id} />
+            </div>
+          )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
