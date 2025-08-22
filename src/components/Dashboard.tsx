@@ -374,7 +374,7 @@ const Dashboard = () => {
           {/* Main Header */}
           <div className="text-center mb-4 sm:mb-6 md:mb-8">
             <img 
-              src="/lovable-uploads/da1a00c7-d8a2-4e86-8132-eb519f8dcaa0.png" 
+              src="/lovable-uploads/467ae3da-92f0-4349-a90d-c4f23b6a1995.png" 
               alt="BodyCode Logo" 
               className="h-16 sm:h-20 md:h-24 lg:h-28 mx-auto mb-3 sm:mb-4"
             />
