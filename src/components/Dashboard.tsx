@@ -305,7 +305,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="p-4 md:p-6 bg-gradient-card shadow-soft border-0">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-sm text-muted-foreground">Current Weight</p>
                   <Select value={weightUnit} onValueChange={handleUnitChange}>
@@ -318,9 +318,38 @@ const Dashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="text-xl md:text-2xl font-bold text-foreground">
+                <p className="text-xl md:text-2xl font-bold text-foreground mb-2">
                   {formatWeight(currentWeight)}
                 </p>
+                
+                {/* Log Weight Button */}
+                {isMobile ? (
+                  <Button 
+                    onClick={() => setShowBottomSheet(true)}
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Log Weight
+                  </Button>
+                ) : (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="sm"
+                        className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
+                      >
+                        Log today's weight
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Log Today's Weight</DialogTitle>
+                      </DialogHeader>
+                      <WeightEntryForm weightUnit={weightUnit} />
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
               <div className="p-2 md:p-3 bg-primary/10 rounded-full">
                 <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -424,32 +453,6 @@ const Dashboard = () => {
           <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
               <h2 className="text-lg md:text-xl font-semibold text-foreground">Weight Trend</h2>
-              {isMobile ? (
-                <Button 
-                  onClick={() => setShowBottomSheet(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Log Weight
-                </Button>
-              ) : (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-soft"
-                    >
-                      Log today's weight
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Log Today's Weight</DialogTitle>
-                    </DialogHeader>
-                    <WeightEntryForm weightUnit={weightUnit} />
-                  </DialogContent>
-                </Dialog>
-              )}
             </div>
             <EnhancedWeightChart weightUnit={weightUnit} goalWeight={goalWeight} />
           </Card>
