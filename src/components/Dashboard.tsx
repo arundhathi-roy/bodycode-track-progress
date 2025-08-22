@@ -14,7 +14,7 @@ import { LogoProcessor } from "./LogoProcessor";
 import { QuickWeightActions } from "./quick-actions/QuickWeightActions";
 import { WeightInsights } from "./insights/WeightInsights";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
-import { EnhancedWeightChart } from "./charts/EnhancedWeightChart";
+import { AdvancedWeightChart } from "./charts/AdvancedWeightChart";
 import { SwipeableEntry } from "./mobile/SwipeableEntry";
 import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
@@ -458,13 +458,14 @@ const Dashboard = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
-          {/* Enhanced Weight Chart */}
-          <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
-              <h2 className="text-lg md:text-xl font-semibold text-foreground">Weight Trend</h2>
-            </div>
-            <EnhancedWeightChart weightUnit={weightUnit} goalWeight={goalWeight} />
-          </Card>
+          {/* Advanced Weight Chart */}
+          <div className="col-span-1 lg:col-span-2">
+            <AdvancedWeightChart 
+              weightUnit={weightUnit} 
+              goalWeight={goalWeight}
+              height={height}
+            />
+          </div>
 
           {/* BMI Chart */}
           {height && (
