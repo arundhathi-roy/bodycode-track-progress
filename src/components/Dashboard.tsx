@@ -306,9 +306,20 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
             
-            {/* Notifications section */}
-            <div className="flex items-center justify-center">
-              {user && <NotificationSystem userId={user.id} />}
+            {/* Water Intake and Notifications section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+              {/* Water Intake Widget */}
+              {height && currentWeight && (
+                <WaterIntakeTracker 
+                  currentWeight={currentWeight}
+                  weightUnit={weightUnit}
+                />
+              )}
+              
+              {/* Notifications */}
+              <div className="flex items-center justify-center">
+                {user && <NotificationSystem userId={user.id} />}
+              </div>
             </div>
           </div>
 
@@ -587,13 +598,9 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Water Intake Tracker */}
-          {height && currentWeight && (
+          {/* Height Setup Card */}
+          {height && (
             <div className="space-y-6">
-              <WaterIntakeTracker 
-                currentWeight={currentWeight}
-                weightUnit={weightUnit}
-              />
               <HeightSetup onHeightSet={handleHeightUpdate} currentHeight={height} />
             </div>
           )}
