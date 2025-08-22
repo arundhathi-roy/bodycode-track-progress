@@ -56,11 +56,11 @@ export const NotificationSystem = ({ userId }: NotificationSystemProps) => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    );
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+    toast({
+      title: "Notification marked as read",
+      description: "The notification has been removed from your list.",
+    });
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
