@@ -475,14 +475,6 @@ const Dashboard = () => {
               height={height}
             />
           </div>
-
-          {/* BMI Chart */}
-          {height && (
-            <Card className="p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-              <h2 className="text-lg md:text-xl font-semibold mb-4 text-foreground">BMI Trend</h2>
-              <BMIChart height={height} />
-            </Card>
-          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
