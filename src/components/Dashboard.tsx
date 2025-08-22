@@ -294,18 +294,12 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Crack the Code to a Better Body</p>
             
-            {/* Data Export moved here */}
-            <div className="mt-4">
+            {/* Export and Notifications section */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
               <DataExport weightUnit={weightUnit} />
+              {user && <NotificationSystem userId={user.id} />}
             </div>
           </div>
-
-          {/* Notification System - Below Header */}
-          {user && (
-            <div className="mb-6 md:mb-8">
-              <NotificationSystem userId={user.id} />
-            </div>
-          )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
