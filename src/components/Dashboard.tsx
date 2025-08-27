@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download, Bell } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -16,28 +16,16 @@ import { OnboardingWizard } from "./onboarding/OnboardingWizard";
 import { AdvancedWeightChart } from "./charts/AdvancedWeightChart";
 import { MenstrualCycleTracker } from "./DailyFlowTracker";
 import { SwipeableEntry } from "./mobile/SwipeableEntry";
-import { SmartCelebrations } from "./celebrations/SmartCelebrations";
 import { BottomSheet } from "./mobile/BottomSheet";
 import { DataExport } from "./data-management/DataExport";
 import { WaterIntakeTracker } from "./WaterIntakeTracker";
 import { ProgressInsights } from "./help/ProgressInsights";
-import { NotificationSystem } from "./notifications/NotificationSystem";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 
-interface Notification {
-  id: string;
-  type: 'achievement' | 'reminder' | 'milestone' | 'tip';
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: Date;
-}
 
 const Dashboard = () => {
   const { signOut, user } = useAuth();
@@ -47,7 +35,6 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [recentEntries, setRecentEntries] = useState<Array<{ id: string; weight: number; entry_date: string; notes?: string }>>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Real data states
   const [userProfile, setUserProfile] = useState<{
@@ -89,29 +76,6 @@ const Dashboard = () => {
     localStorage.setItem('weightUnit', newUnit);
   };
 
-  // Initialize notifications
-  useEffect(() => {
-    const sampleNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'achievement',
-        title: '🎉 7-Day Streak!',
-        message: 'Congratulations on logging your weight for 7 days straight!',
-        isRead: false,
-        createdAt: new Date()
-      },
-      {
-        id: '2',
-        type: 'milestone',
-        title: '🌟 25% to Goal',
-        message: 'You\'re a quarter of the way to your goal weight. Keep it up!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 86400000)
-      }
-    ];
-
-    setNotifications(sampleNotifications);
-  }, []);
 
   // Fetch user data
   useEffect(() => {
@@ -270,13 +234,6 @@ const Dashboard = () => {
     }
   };
 
-  // Handle notification mark as read
-  const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-  };
-
-  // Calculate unread count
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   if (isLoading) {
     return (
@@ -301,18 +258,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Smart Celebrations with Confetti */}
-      <SmartCelebrations 
-        currentWeight={currentWeight}
-        goalWeight={goalWeight}
-        startWeight={startWeight}
-        recentEntries={recentEntries}
-        weightUnit={weightUnit}
-      />
-
-      {/* Goal celebrations are triggered automatically by the components when goals are reached */}
-
-      {/* Notification system */}
 
       <div className="min-h-screen bg-gradient-subtle">
         {/* Top Bar with Sign Out */}
@@ -320,41 +265,6 @@ const Dashboard = () => {
           <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-7xl">
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
-                {/* Notification Bell */}
-                {user && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size={isMobile ? "sm" : "default"}
-                        className="relative bg-background/80 p-2 sm:px-3"
-                      >
-                        <Bell className="h-4 w-4" />
-                        {/* Badge for unread count */}
-                        {unreadCount > 0 && (
-                          <Badge 
-                            variant="destructive" 
-                            className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 text-xs p-0 flex items-center justify-center min-w-4 sm:min-w-5"
-                          >
-                            {unreadCount}
-                          </Badge>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-[90vw] sm:w-80 p-0 mx-2 sm:mx-0" 
-                      align="end"
-                      side="bottom"
-                      sideOffset={8}
-                    >
-                      <NotificationSystem 
-                        userId={user.id} 
-                        notifications={notifications}
-                        onMarkAsRead={markNotificationAsRead}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
                 
                 <Button 
                   onClick={signOut}
