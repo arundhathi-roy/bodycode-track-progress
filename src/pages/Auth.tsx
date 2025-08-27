@@ -93,9 +93,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-gradient-primary opacity-5 animate-pulse-glow"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/10 animate-pulse opacity-70"></div>
       
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Header */}
@@ -104,17 +104,17 @@ const Auth = () => {
             <img 
               src="/lovable-uploads/photo-output.PNG" 
               alt="BodyCode Logo" 
-              className="h-28 mx-auto mb-6 drop-shadow-lg transition-transform hover:scale-105 duration-300"
+              className="h-28 mx-auto mb-6 drop-shadow-md transition-transform hover:scale-105 duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-full blur-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/5 rounded-full blur-3xl opacity-60"></div>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-3 tracking-tight">Welcome to BodyCode</h1>
           <p className="text-muted-foreground text-lg">Crack the Code to a Better Body</p>
         </div>
 
-        <Card className="p-8 bg-gradient-card shadow-strong border-0 backdrop-blur-sm animate-slide-up">
+        <Card className="p-8 bg-card/70 backdrop-blur-sm shadow-soft border border-border/20 animate-slide-up">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/30 p-1 rounded-lg border border-border/10">
               <TabsTrigger 
                 value="signin" 
                 className="data-[state=active]:bg-background data-[state=active]:shadow-soft transition-all duration-300"
@@ -190,7 +190,7 @@ const Auth = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-primary hover:shadow-medium transition-all duration-300 text-primary-foreground font-semibold text-base" 
+                  className="w-full h-12 bg-primary/90 hover:bg-primary hover:shadow-soft transition-all duration-300 text-primary-foreground font-semibold text-base" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -279,7 +279,7 @@ const Auth = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-primary hover:shadow-medium transition-all duration-300 text-primary-foreground font-semibold text-base" 
+                  className="w-full h-12 bg-primary/90 hover:bg-primary hover:shadow-soft transition-all duration-300 text-primary-foreground font-semibold text-base" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
