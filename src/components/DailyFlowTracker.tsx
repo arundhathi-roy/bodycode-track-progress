@@ -382,9 +382,30 @@ export const MenstrualCycleTracker = () => {
                   />
                 </div>
                 
-                <Button onClick={addOrUpdateEntry} className="w-full">
-                  {editingEntry ? 'Update Entry' : 'Add Entry'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={addOrUpdateEntry} className="flex-1">
+                    {editingEntry ? 'Update Entry' : 'Add Entry'}
+                  </Button>
+                  {editingEntry && (
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => {
+                        if (editingEntry) {
+                          deleteEntry(editingEntry.id);
+                          setIsDialogOpen(false);
+                          setEditingEntry(null);
+                          setSelectedDate(undefined);
+                          setFlowIntensity('medium');
+                          setNotes('');
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>
