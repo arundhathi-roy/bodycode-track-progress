@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays, Plus, Download, Edit2, Trash2 } from 'lucide-react';
-import { format, differenceInDays, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -34,6 +34,11 @@ export const MenstrualCycleTracker = () => {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<DailyFlowEntry | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Helper: format a Date to our key used in DB
+  const formatDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
+  // Helper: when converting a stored date string to Date, use local noon to avoid TZ shift
+  const toLocalNoon = (dateStr: string) => new Date(`${dateStr}T12:00:00`);
 
   useEffect(() => {
     if (user) {
@@ -67,7 +72,7 @@ export const MenstrualCycleTracker = () => {
     try {
       const entryData = {
         user_id: user?.id,
-        flow_date: format(selectedDate, 'yyyy-MM-dd'),
+        flow_date: formatDateKey(selectedDate),
         flow_intensity: flowIntensity,
         notes: notes.trim() || null
       };
@@ -129,7 +134,8 @@ export const MenstrualCycleTracker = () => {
 
   const openEditDialog = (entry: DailyFlowEntry) => {
     setEditingEntry(entry);
-    setSelectedDate(new Date(entry.flow_date));
+    // Use local noon to avoid date shifting when constructing Date
+    setSelectedDate(toLocalNoon(entry.flow_date));
     setFlowIntensity(entry.flow_intensity);
     setNotes(entry.notes || '');
     setIsDialogOpen(true);
@@ -143,10 +149,14 @@ export const MenstrualCycleTracker = () => {
     setIsDialogOpen(true);
   };
 
+  // Compare using string keys to avoid timezone issues
   const getEntryForDate = (date: Date) => {
-    return dailyEntries.find(entry => 
-      isSameDay(new Date(entry.flow_date), date)
-    );
+    const key = formatDateKey(date);
+    const match = dailyEntries.find(entry => entry.flow_date === key);
+    if (match) {
+      console.log('Entry found for date:', key, match);
+    }
+    return match;
   };
 
   const downloadPDF = async () => {
@@ -184,9 +194,9 @@ export const MenstrualCycleTracker = () => {
     }
   };
 
-  // Group entries by month for display
+  // Group entries by month using flow_date string to avoid TZ shifts
   const entriesByMonth = dailyEntries.reduce((acc: Record<string, DailyFlowEntry[]>, entry) => {
-    const monthKey = format(new Date(entry.flow_date), 'yyyy-MM');
+    const monthKey = entry.flow_date.slice(0, 7); // yyyy-MM
     if (!acc[monthKey]) {
       acc[monthKey] = [];
     }
@@ -200,19 +210,19 @@ export const MenstrualCycleTracker = () => {
     lightFlow: (date: Date) => {
       const entry = getEntryForDate(date);
       const isLight = entry?.flow_intensity === 'light';
-      if (isLight) console.log('Light flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      if (isLight) console.log('Light flow found for date:', formatDateKey(date), entry);
       return isLight;
     },
     mediumFlow: (date: Date) => {
       const entry = getEntryForDate(date);
       const isMedium = entry?.flow_intensity === 'medium';
-      if (isMedium) console.log('Medium flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      if (isMedium) console.log('Medium flow found for date:', formatDateKey(date), entry);
       return isMedium;
     },
     heavyFlow: (date: Date) => {
       const entry = getEntryForDate(date);
       const isHeavy = entry?.flow_intensity === 'heavy';
-      if (isHeavy) console.log('Heavy flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      if (isHeavy) console.log('Heavy flow found for date:', formatDateKey(date), entry);
       return isHeavy;
     }
   };
@@ -252,12 +262,10 @@ export const MenstrualCycleTracker = () => {
     );
   }
 
-  // Calculate cycle statistics
+  // Calculate cycle statistics (use flow_date string for current month filter)
   const calculateCycleStats = () => {
     const currentMonth = format(new Date(), 'yyyy-MM');
-    const currentMonthEntries = dailyEntries.filter(entry => 
-      format(new Date(entry.flow_date), 'yyyy-MM') === currentMonth
-    );
+    const currentMonthEntries = dailyEntries.filter(entry => entry.flow_date.startsWith(currentMonth));
     
     const averageCycleLength = calculateAverageCycleLength();
     const totalCycles = Object.keys(entriesByMonth).length;
@@ -276,7 +284,7 @@ export const MenstrualCycleTracker = () => {
     const months = Object.keys(entriesByMonth).sort();
     if (months.length < 2) return 0;
     
-    const cycleLengths = [];
+    const cycleLengths: number[] = [];
     for (let i = 1; i < months.length; i++) {
       const prevMonth = new Date(months[i-1] + '-01');
       const currentMonth = new Date(months[i] + '-01');
@@ -325,9 +333,9 @@ export const MenstrualCycleTracker = () => {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     disabled={(date) => date > new Date()}
-                     modifiers={modifiers}
-                     modifiersStyles={modifiersStyles}
-                     key={`calendar-${refreshKey}-${dailyEntries.length}`}
+                    modifiers={modifiers}
+                    modifiersStyles={modifiersStyles}
+                    key={`calendar-${refreshKey}-${dailyEntries.length}`}
                     onDayClick={(date) => {
                       setSelectedDate(date);
                       const existingEntry = getEntryForDate(date);
