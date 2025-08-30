@@ -210,25 +210,25 @@ export const MenstrualCycleTracker = () => {
 
   const modifiersStyles = {
     lightFlow: {
-      backgroundColor: '#fecaca', // light red/pink
-      color: '#7f1d1d', // dark red text
+      backgroundColor: 'hsl(var(--destructive) / 0.15)', // light red/pink
+      color: 'hsl(var(--destructive))', 
       borderRadius: '50%',
       fontWeight: 'bold',
-      border: '2px solid #fca5a5'
+      border: '2px solid hsl(var(--destructive) / 0.3)'
     },
     mediumFlow: {
-      backgroundColor: '#f87171', // medium red
-      color: '#ffffff', // white text
+      backgroundColor: 'hsl(var(--destructive) / 0.6)', // medium red
+      color: 'hsl(var(--destructive-foreground))', 
       borderRadius: '50%',
       fontWeight: 'bold',
-      border: '2px solid #ef4444'
+      border: '2px solid hsl(var(--destructive) / 0.8)'
     },
     heavyFlow: {
-      backgroundColor: '#dc2626', // dark red
-      color: '#ffffff', // white text
+      backgroundColor: 'hsl(var(--destructive))', // dark red
+      color: 'hsl(var(--destructive-foreground))', 
       borderRadius: '50%',
       fontWeight: 'bold',
-      border: '2px solid #b91c1c'
+      border: '2px solid hsl(var(--destructive) / 0.9)'
     }
   };
 
