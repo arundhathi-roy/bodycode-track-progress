@@ -316,8 +316,9 @@ export const MenstrualCycleTracker = () => {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     disabled={(date) => date > new Date()}
-                    modifiers={modifiers}
-                    modifiersStyles={modifiersStyles}
+                     modifiers={modifiers}
+                     modifiersStyles={modifiersStyles}
+                     key={`calendar-${dailyEntries.length}`}
                     onDayClick={(date) => {
                       setSelectedDate(date);
                       const existingEntry = getEntryForDate(date);

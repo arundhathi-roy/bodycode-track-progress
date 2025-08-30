@@ -497,7 +497,8 @@ const Dashboard = () => {
           </div>
           
           {/* Menstrual Cycle Tracker - Only for female users */}
-          {userProfile?.gender === 'female' && (
+          {/* Always show menstrual tracking for female users or if gender is not set */}
+          {(userProfile?.gender === 'female' || !userProfile?.gender) && (
             <div className="w-full">
               <MenstrualCycleTracker />
             </div>
