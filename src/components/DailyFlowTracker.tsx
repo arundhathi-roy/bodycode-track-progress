@@ -33,6 +33,7 @@ export const MenstrualCycleTracker = () => {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<DailyFlowEntry | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -101,6 +102,7 @@ export const MenstrualCycleTracker = () => {
       setFlowIntensity('medium');
       setNotes('');
       setEditingEntry(null);
+      setRefreshKey(prev => prev + 1);
       fetchDailyEntries();
     } catch (error) {
       console.error('Error saving entry:', error);
@@ -117,6 +119,7 @@ export const MenstrualCycleTracker = () => {
 
       if (error) throw error;
       toast.success('Flow entry deleted successfully');
+      setRefreshKey(prev => prev + 1);
       fetchDailyEntries();
     } catch (error) {
       console.error('Error deleting entry:', error);
@@ -196,15 +199,21 @@ export const MenstrualCycleTracker = () => {
   const modifiers = {
     lightFlow: (date: Date) => {
       const entry = getEntryForDate(date);
-      return entry?.flow_intensity === 'light';
+      const isLight = entry?.flow_intensity === 'light';
+      if (isLight) console.log('Light flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      return isLight;
     },
     mediumFlow: (date: Date) => {
       const entry = getEntryForDate(date);
-      return entry?.flow_intensity === 'medium';
+      const isMedium = entry?.flow_intensity === 'medium';
+      if (isMedium) console.log('Medium flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      return isMedium;
     },
     heavyFlow: (date: Date) => {
       const entry = getEntryForDate(date);
-      return entry?.flow_intensity === 'heavy';
+      const isHeavy = entry?.flow_intensity === 'heavy';
+      if (isHeavy) console.log('Heavy flow found for date:', format(date, 'yyyy-MM-dd'), entry);
+      return isHeavy;
     }
   };
 
@@ -318,7 +327,7 @@ export const MenstrualCycleTracker = () => {
                     disabled={(date) => date > new Date()}
                      modifiers={modifiers}
                      modifiersStyles={modifiersStyles}
-                     key={`calendar-${dailyEntries.length}`}
+                     key={`calendar-${refreshKey}-${dailyEntries.length}`}
                     onDayClick={(date) => {
                       setSelectedDate(date);
                       const existingEntry = getEntryForDate(date);
