@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download, Bell } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download, Bell, User } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -329,6 +329,50 @@ const Dashboard = () => {
           <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-7xl">
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size={isMobile ? "sm" : "default"}
+                      className="bg-background/80 px-2 sm:px-4"
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline sm:ml-2">Profile</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Profile Settings</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Email:</strong> {user?.email}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Current Weight:</strong> {formatWeight(currentWeight)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Height:</strong> {height ? `${Math.floor(height / 12)}'${height % 12}"` : 'Not set'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Gender:</strong> {userProfile?.gender || 'Not set'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Goal Weight:</strong> {formatWeight(goalWeight)}
+                      </div>
+                      <div className="pt-4">
+                        <HeightSetup 
+                          onHeightSet={(newHeight) => {
+                            handleHeightUpdate(newHeight);
+                            refreshData();
+                          }} 
+                          currentHeight={height} 
+                        />
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 
                 <Dialog>
                   <DialogTrigger asChild>
