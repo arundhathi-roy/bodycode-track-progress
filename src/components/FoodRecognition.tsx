@@ -407,34 +407,7 @@ const FoodRecognition = () => {
           Take Photo
         </Button>
 
-        {/* Results */}
-        {result && (
-          <div className="mt-6 space-y-4">
-            <h4 className="font-medium text-foreground">Step 1: Food Detection</h4>
-            
-            <div className="bg-background/50 rounded-lg p-4">
-              <pre className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
-
-            {result.items.length > 0 && (
-              <div className="space-y-2">
-                {result.items.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="flex justify-between items-center p-2 bg-background/30 rounded"
-                  >
-                    <span className="font-medium">{item.label}</span>
-                    <div className="text-sm text-muted-foreground">
-                      {(item.confidence * 100).toFixed(1)}% • {(item.bbox_area_ratio * 100).toFixed(1)}% area
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Results are processed but not shown until final nutrition */}
 
         {/* Final Nutrition Calculation */}
         {calculatedMeals && (
