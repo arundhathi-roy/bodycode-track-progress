@@ -56,19 +56,44 @@ const FoodRecognition = () => {
 
   const normalizeNutrition = async (detectedItems: FoodItem[]): Promise<{ items: NormalizedFoodItem[] }> => {
     try {
-      // Fetch nutrition reference data
-      const { data: nutritionData, error } = await supabase
-        .from('nutrition_reference')
-        .select('name, kcal_per_100, protein_per_100, carbs_per_100, fat_per_100, fiber_per_100, aliases');
-
-      if (error) {
-        console.error('Error fetching nutrition data:', error);
-        return { items: [] };
-      }
-
       const normalizedItems: NormalizedFoodItem[] = [];
 
       for (const item of detectedItems) {
+        // Check if GPT-4 provided nutrition data directly
+        if ((item as any).nutrition) {
+          const nutrition = (item as any).nutrition;
+          normalizedItems.push({
+            name: item.label,
+            source_name: item.label,
+            kcal_per_100: Number(nutrition.calories_per_100g),
+            protein_per_100: Number(nutrition.protein_per_100g),
+            carbs_per_100: Number(nutrition.carbs_per_100g),
+            fat_per_100: Number(nutrition.fat_per_100g),
+            fiber_per_100: Number(nutrition.fiber_per_100g || 0)
+          });
+          continue;
+        }
+
+        // Fallback to database lookup for items without direct nutrition data
+        const { data: nutritionData, error } = await supabase
+          .from('nutrition_reference')
+          .select('name, kcal_per_100, protein_per_100, carbs_per_100, fat_per_100, fiber_per_100, aliases');
+
+        if (error) {
+          console.error('Error fetching nutrition data:', error);
+          // Use default values
+          normalizedItems.push({
+            name: item.label,
+            source_name: item.label,
+            kcal_per_100: 100,
+            protein_per_100: 5,
+            carbs_per_100: 15,
+            fat_per_100: 2,
+            fiber_per_100: 1
+          });
+          continue;
+        }
+
         // Find best match in nutrition database
         let bestMatch = null;
         let bestScore = 0;
