@@ -76,6 +76,23 @@ const NutritionProfile = () => {
     };
 
     fetchDailyNutrition();
+
+    // Listen for nutrition cleared events
+    const handleNutritionCleared = () => {
+      setDailyNutrition({
+        totalCalories: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        totalFiber: 0
+      });
+    };
+
+    window.addEventListener('nutritionCleared', handleNutritionCleared);
+
+    return () => {
+      window.removeEventListener('nutritionCleared', handleNutritionCleared);
+    };
   }, [user]);
 
   const getProgressPercentage = (current: number, target: number) => {

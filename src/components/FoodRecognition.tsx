@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
 interface FoodItem {
@@ -225,6 +225,9 @@ const FoodRecognition = () => {
         .eq('meal_date', today);
 
       if (error) throw error;
+
+      // Dispatch custom event to refresh nutrition displays
+      window.dispatchEvent(new CustomEvent('nutritionCleared'));
 
       toast({
         title: "Nutrition Cleared!",
