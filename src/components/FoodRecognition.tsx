@@ -304,6 +304,9 @@ const FoodRecognition = () => {
         title: "Meals Saved!",
         description: `Saved ${meals.length} food items to your daily nutrition`,
       });
+
+      // Dispatch custom event to refresh nutrition displays
+      window.dispatchEvent(new CustomEvent('nutritionUpdated'));
     } catch (error) {
       console.error('Error saving meals:', error);
       toast({

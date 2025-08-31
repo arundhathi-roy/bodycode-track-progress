@@ -77,7 +77,7 @@ const NutritionProfile = () => {
 
     fetchDailyNutrition();
 
-    // Listen for nutrition cleared events
+    // Listen for nutrition events
     const handleNutritionCleared = () => {
       setDailyNutrition({
         totalCalories: 0,
@@ -88,10 +88,16 @@ const NutritionProfile = () => {
       });
     };
 
+    const handleNutritionUpdated = () => {
+      fetchDailyNutrition();
+    };
+
     window.addEventListener('nutritionCleared', handleNutritionCleared);
+    window.addEventListener('nutritionUpdated', handleNutritionUpdated);
 
     return () => {
       window.removeEventListener('nutritionCleared', handleNutritionCleared);
+      window.removeEventListener('nutritionUpdated', handleNutritionUpdated);
     };
   }, [user]);
 
