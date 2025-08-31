@@ -7,147 +7,96 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Starting food analysis...');
-    
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch {
-      // Return fallback for invalid requests
-      const fallbackResult = {
-        items: [{
-          label: 'Generic meal',
-          confidence: 0.3,
-          bbox_area_ratio: 0.8,
-          estimated_grams: 120,
-          portion_size: 'medium',
-          cooking_method: 'unknown',
-          nutrition: {
-            calories_per_100g: 150,
-            protein_per_100g: 12,
-            carbs_per_100g: 18,
-            fat_per_100g: 4,
-            fiber_per_100g: 3
-          }
-        }]
-      };
-      
-      return new Response(JSON.stringify({
-        success: true,
-        result: fallbackResult
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    const { image_url, meal_description } = requestBody;
-    
-    // Always return success with nutritional estimates
-    const fallbackResult = {
-      items: [{
-        label: meal_description ? `Meal: ${meal_description.substring(0, 50)}` : 'Food item',
-        confidence: 0.7,
-        bbox_area_ratio: 0.8,
-        estimated_grams: 150,
-        portion_size: 'medium',
-        cooking_method: 'mixed',
-        nutrition: {
-          calories_per_100g: 180,
-          protein_per_100g: 10,
-          carbs_per_100g: 22,
-          fat_per_100g: 6,
-          fiber_per_100g: 4
-        }
-      }]
-    };
-
-    // Try OpenAI if API key is available
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (openAIApiKey) {
-      try {
-        console.log('Attempting OpenAI analysis...');
-        
-        const messages = [
-          {
-            role: 'system',
-            content: 'Analyze food and return JSON with nutrition data'
-          },
-          {
-            role: 'user',
-            content: meal_description || 'Analyze this food for nutrition information'
-          }
-        ];
-
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: messages,
-            max_tokens: 500,
-            temperature: 0.3
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const aiContent = data.choices[0].message.content;
-          console.log('OpenAI response:', aiContent);
-          
-          // Try to extract better nutrition info from AI
-          if (aiContent && meal_description) {
-            fallbackResult.items[0].label = meal_description;
-            fallbackResult.items[0].confidence = 0.8;
-          }
-        }
-      } catch (aiError) {
-        console.log('OpenAI failed, using fallback:', aiError);
-      }
+    if (!openAIApiKey) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Missing OPENAI_API_KEY in Supabase Edge Function secrets. Please add it and retry.'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      result: fallbackResult
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {}
+
+    const { image_url, meal_description } = body;
+    if (!image_url && !meal_description) {
+      return new Response(JSON.stringify({ success: false, error: 'Provide an image_url or meal_description' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const messages: any[] = [
+      { role: 'system', content: 'You are a nutrition expert. Return ONLY valid JSON with key "items" as an array. No prose. Each item: {name, estimated_grams, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, fiber_per_100g, confidence}.' }
+    ];
+
+    if (image_url && meal_description) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: `Analyze this meal description and image and return ONLY JSON: ${meal_description}` },
+          { type: 'image_url', image_url: { url: image_url } }
+        ]
+      });
+    } else if (image_url) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Analyze this food image and return ONLY JSON.' },
+          { type: 'image_url', image_url: { url: image_url } }
+        ]
+      });
+    } else {
+      messages.push({ role: 'user', content: `Analyze this description and return ONLY JSON: ${meal_description}` });
+    }
+
+    const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${openAIApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'gpt-5-2025-08-07', messages, max_completion_tokens: 1200 })
     });
 
-  } catch (error) {
-    console.error('Function error:', error);
-    
-    // Even on error, return success with fallback data
-    const errorFallback = {
-      items: [{
-        label: 'Estimated meal',
-        confidence: 0.2,
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      return new Response(JSON.stringify({ success: false, error: `OpenAI error ${aiRes.status}: ${errText}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const data = await aiRes.json();
+    const content: string = data?.choices?.[0]?.message?.content ?? '';
+
+    // Extract JSON block from the response safely
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+    } catch (e) {
+      return new Response(JSON.stringify({ success: false, error: 'AI returned non-JSON output. Please try again.' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const transformed = {
+      items: (parsed.items || []).map((it: any) => ({
+        label: it.name,
+        confidence: it.confidence ?? 0.8,
         bbox_area_ratio: 0.8,
-        estimated_grams: 100,
-        portion_size: 'medium',
-        cooking_method: 'unknown',
+        estimated_grams: it.estimated_grams ?? 100,
+        portion_size: (it.estimated_grams ?? 100) < 80 ? 'small' : (it.estimated_grams ?? 100) > 200 ? 'large' : 'medium',
+        cooking_method: it.cooking_method || 'unknown',
         nutrition: {
-          calories_per_100g: 200,
-          protein_per_100g: 8,
-          carbs_per_100g: 25,
-          fat_per_100g: 7,
-          fiber_per_100g: 2
+          calories_per_100g: it.calories_per_100g ?? 200,
+          protein_per_100g: it.protein_per_100g ?? 10,
+          carbs_per_100g: it.carbs_per_100g ?? 20,
+          fat_per_100g: it.fat_per_100g ?? 5,
+          fiber_per_100g: it.fiber_per_100g ?? 2
         }
-      }]
+      }))
     };
 
-    return new Response(JSON.stringify({
-      success: true,
-      result: errorFallback
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify({ success: true, result: transformed }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ success: false, error: err?.message || 'Unknown error' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 });
