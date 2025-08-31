@@ -408,18 +408,26 @@ Provide detailed nutrition analysis for all mentioned food items. If an image is
   };
 
   const handleFileSelect = async (file: File) => {
+    console.log('File selected:', file.name, file.type, file.size);
+    
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
       return;
     }
 
     // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
+      console.log('Image preview created');
       setImagePreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
 
+    console.log('Starting image processing...');
     await processImage(file);
   };
 
@@ -456,22 +464,31 @@ Provide detailed nutrition analysis for all mentioned food items. If an image is
   };
 
   const processImage = async (file?: File) => {
+    console.log('processImage called with:', { hasFile: !!file, hasMealDescription: !!mealDescription });
+    
     // Process image and/or text
     setIsProcessing(true);
     try {
+      console.log('Calling processFoodRecognition...');
       const recognition = await processFoodRecognition(file, mealDescription);
+      console.log('Recognition result:', recognition);
+      
       setResult(recognition);
       
       // Normalize nutrition data
       if (recognition.items.length > 0) {
+        console.log('Normalizing nutrition for', recognition.items.length, 'items');
         const normalized = await normalizeNutrition(recognition.items);
         setNormalizedResult(normalized);
         
         // Calculate portions and nutrition
         if (normalized.items.length > 0) {
           const calculated = calculatePortionsAndNutrition(recognition.items, normalized.items);
+          console.log('Calculated meals:', calculated);
           setCalculatedMeals(calculated);
         }
+      } else {
+        console.log('No items found in recognition result');
       }
     } catch (error) {
       console.error('Error processing:', error);
