@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Loader2, Image } from "lucide-react";
+import { Upload, Camera, Loader2, Image, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface FoodItem {
   label: string;
@@ -401,10 +402,23 @@ Be thorough but only include items you can clearly identify. Consider typical se
 
   return (
     <Card className="p-6 bg-gradient-card shadow-soft border-0">
-      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-        <Camera className="h-5 w-5 text-primary" />
-        Calories Tracker
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Camera className="h-5 w-5 text-primary" />
+          Calories Tracker
+        </h3>
+        <Button 
+          asChild
+          variant="outline" 
+          size="sm"
+          className="gap-2"
+        >
+          <Link to="/nutrition-calendar">
+            <Calendar className="h-4 w-4" />
+            View History
+          </Link>
+        </Button>
+      </div>
       
       <div className="space-y-4">
         {/* Upload Area */}
