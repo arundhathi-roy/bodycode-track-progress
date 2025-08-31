@@ -45,37 +45,9 @@ export const WeightInsights = ({ entries, weightUnit, goalWeight, currentWeight 
   const timeToGoal = getTimeToGoal();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Trend Analysis */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-sm">Weight Trend</h3>
-          {getTrendIcon()}
-        </div>
-        <p className="text-sm text-muted-foreground mb-2">
-          {getTrendMessage()}
-        </p>
-        <Badge variant={analytics.trend === 'decreasing' ? 'default' : 'secondary'}>
-          {analytics.trend === 'decreasing' ? 'Losing' : analytics.trend === 'increasing' ? 'Gaining' : 'Stable'}
-        </Badge>
-      </Card>
-
-      {/* Logging Streak */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-sm">Logging Streak</h3>
-          <Flame className="h-4 w-4 text-orange-500" />
-        </div>
-        <div className="text-2xl font-bold text-primary">
-          {analytics.streak}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {analytics.streak === 1 ? 'day' : 'days'} in a row
-        </p>
-      </Card>
-
+    <div className="grid grid-cols-1 gap-4">
       {/* Monthly Summary */}
-      <Card className="p-4 md:col-span-2 lg:col-span-3">
+      <Card className="p-4">
         <h3 className="font-semibold text-sm mb-3">Summary</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
