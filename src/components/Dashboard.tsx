@@ -543,6 +543,11 @@ const Dashboard = () => {
 
         </div>
 
+        {/* Calories Tracker - moved below current weight */}
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <FoodRecognition />
+        </div>
+
         {/* Height Setup (if not set) */}
         {!height && (
           <div className="mb-8">
@@ -583,11 +588,6 @@ const Dashboard = () => {
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6 md:mb-8">
-          {/* Food Recognition */}
-          <div className="w-full">
-            <FoodRecognition />
-          </div>
-          
           {/* Advanced Weight Chart */}
           <div className="w-full">
             <AdvancedWeightChart 

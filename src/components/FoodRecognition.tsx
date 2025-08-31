@@ -194,7 +194,7 @@ const FoodRecognition = () => {
     <Card className="p-6 bg-gradient-card shadow-soft border-0">
       <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
         <Camera className="h-5 w-5 text-primary" />
-        Food Recognition
+        Calories Tracker
       </h3>
       
       <div className="space-y-4">
