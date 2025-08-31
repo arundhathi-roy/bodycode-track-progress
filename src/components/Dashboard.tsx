@@ -331,18 +331,6 @@ const Dashboard = () => {
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
                 
-                <Button 
-                  asChild
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  className="bg-background/80 px-2 sm:px-4"
-                >
-                  <Link to="/nutrition-calendar">
-                    <Calendar className="h-4 w-4" />
-                    <span className="hidden sm:inline sm:ml-2">Nutrition Calendar</span>
-                  </Link>
-                </Button>
-                
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button 
