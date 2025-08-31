@@ -2,11 +2,6 @@ import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, Loader2 } from "lucide-react";
-import { pipeline, env } from '@huggingface/transformers';
-
-// Configure transformers.js
-env.allowLocalModels = false;
-env.useBrowserCache = true;
 
 interface FoodItem {
   label: string;
@@ -34,99 +29,35 @@ const FoodRecognition = () => {
   ];
 
   const processFoodRecognition = async (imageFile: File): Promise<FoodRecognitionResult> => {
-    try {
-      // Create classifier pipeline
-      const classifier = await pipeline(
-        'image-classification',
-        'google/vit-base-patch16-224',
-        { device: 'webgpu' }
-      );
+    // Simulate food recognition for demo purposes
+    // In a real implementation, this would use AI/ML for food detection
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Mock results for demo
+        const mockItems: FoodItem[] = [
+          {
+            label: "rice",
+            confidence: 0.892,
+            bbox_area_ratio: 0.35
+          },
+          {
+            label: "grilled chicken",
+            confidence: 0.765,
+            bbox_area_ratio: 0.28
+          },
+          {
+            label: "salad",
+            confidence: 0.654,
+            bbox_area_ratio: 0.22
+          }
+        ];
 
-      // Process the image
-      const results = await classifier(imageFile);
-      
-      // Filter and process results for food items
-      const foodItems: FoodItem[] = [];
-      let plateDetected = false;
-      
-      results.forEach((item: any, index: number) => {
-        const label = item.label.toLowerCase();
-        const confidence = item.score;
-        
-        // Check if it's a plate
-        if (label.includes('plate') || label.includes('bowl') || label.includes('dish')) {
-          plateDetected = true;
-        }
-        
-        // Check if it's food-related
-        const isFoodItem = foodKeywords.some(keyword => 
-          label.includes(keyword) || keyword.includes(label.split(' ')[0])
-        );
-        
-        if (isFoodItem && confidence > 0.1) {
-          // Simplified food name
-          let simplifiedLabel = label;
-          if (label.includes('chicken')) simplifiedLabel = 'grilled chicken';
-          else if (label.includes('rice')) simplifiedLabel = 'rice';
-          else if (label.includes('bread')) simplifiedLabel = 'bread';
-          else if (label.includes('salad') || label.includes('lettuce')) simplifiedLabel = 'salad';
-          else if (label.includes('potato')) simplifiedLabel = 'potato';
-          else if (label.includes('soup')) simplifiedLabel = 'soup';
-          else if (label.includes('pasta') || label.includes('noodle')) simplifiedLabel = 'pasta';
-          
-          // Estimate area ratio based on confidence and position
-          // Higher confidence items get larger area ratios
-          const baseArea = confidence * 0.4; // Scale down from confidence
-          const positionFactor = 1 - (index * 0.1); // Earlier results get larger areas
-          const areaRatio = Math.min(baseArea * Math.max(positionFactor, 0.1), 0.8);
-          
-          foodItems.push({
-            label: simplifiedLabel,
-            confidence: parseFloat(confidence.toFixed(3)),
-            bbox_area_ratio: parseFloat(areaRatio.toFixed(3))
-          });
-        }
-      });
-      
-      // Merge similar items and normalize area ratios
-      const mergedItems = new Map<string, FoodItem>();
-      
-      foodItems.forEach(item => {
-        if (mergedItems.has(item.label)) {
-          const existing = mergedItems.get(item.label)!;
-          mergedItems.set(item.label, {
-            label: item.label,
-            confidence: Math.max(existing.confidence, item.confidence),
-            bbox_area_ratio: existing.bbox_area_ratio + item.bbox_area_ratio
-          });
-        } else {
-          mergedItems.set(item.label, item);
-        }
-      });
-      
-      // Convert back to array and normalize ratios to sum ≤ 1.0
-      const finalItems = Array.from(mergedItems.values());
-      const totalRatio = finalItems.reduce((sum, item) => sum + item.bbox_area_ratio, 0);
-      
-      if (totalRatio > 1.0) {
-        finalItems.forEach(item => {
-          item.bbox_area_ratio = parseFloat((item.bbox_area_ratio / totalRatio).toFixed(3));
+        resolve({
+          items: mockItems,
+          plate_present: true
         });
-      }
-      
-      return {
-        items: finalItems,
-        plate_present: plateDetected
-      };
-      
-    } catch (error) {
-      console.error('Food recognition error:', error);
-      // Return empty result on error
-      return {
-        items: [],
-        plate_present: false
-      };
-    }
+      }, 2000); // Simulate processing time
+    });
   };
 
   const handleFileSelect = async (file: File) => {
