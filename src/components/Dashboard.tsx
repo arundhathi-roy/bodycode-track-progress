@@ -249,53 +249,52 @@ const Dashboard = () => {
 
   const unreadNotifications = notifications.filter(n => !n.is_read);
 
-  const refreshData = () => {
-    // Refetch user data after updates
+  const refreshData = async () => {
+    // Force refresh user data after updates
     if (user) {
-      const fetchUserData = async () => {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('current_weight, height_inches, goal_weight, gender')
-            .eq('user_id', user.id)
-            .single();
+      console.log('🔄 Refreshing user data...');
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('current_weight, height_inches, goal_weight, gender')
+          .eq('user_id', user.id)
+          .single();
 
-          if (profile) setUserProfile(profile);
+        console.log('📊 Fresh profile data:', profile);
+        if (profile) setUserProfile(profile);
 
-          const { data: entries } = await supabase
-            .from('weight_entries')
-            .select('id, weight, entry_date, notes')
-            .eq('user_id', user.id)
-            .order('entry_date', { ascending: false })
-            .limit(10);
+        const { data: entries } = await supabase
+          .from('weight_entries')
+          .select('id, weight, entry_date, notes')
+          .eq('user_id', user.id)
+          .order('entry_date', { ascending: false })
+          .limit(10);
 
-          if (entries) {
-            setWeightEntries(entries);
-            setRecentEntries(entries);
-          }
-
-          // Refresh notifications
-          const { data: notificationData } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-
-          if (notificationData) {
-            setNotifications(notificationData.map(n => ({
-              id: n.id,
-              type: n.type as 'achievement' | 'reminder' | 'milestone' | 'tip',
-              title: n.title,
-              message: n.message,
-              is_read: n.is_read,
-              created_at: n.created_at
-            })));
-          }
-        } catch (error) {
-          console.error('Error refreshing data:', error);
+        if (entries) {
+          setWeightEntries(entries);
+          setRecentEntries(entries);
         }
-      };
-      fetchUserData();
+
+        // Refresh notifications
+        const { data: notificationData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (notificationData) {
+          setNotifications(notificationData.map(n => ({
+            id: n.id,
+            type: n.type as 'achievement' | 'reminder' | 'milestone' | 'tip',
+            title: n.title,
+            message: n.message,
+            is_read: n.is_read,
+            created_at: n.created_at
+          })));
+        }
+      } catch (error) {
+        console.error('Error refreshing data:', error);
+      }
     }
   };
 
@@ -608,7 +607,10 @@ const Dashboard = () => {
           </div>
           
           {/* Menstrual Cycle Tracker - Only visible for female users */}
-          {userProfile?.gender === 'female' && (
+          {(() => {
+            console.log('Current user gender:', userProfile?.gender);
+            return userProfile?.gender === 'female';
+          })() && (
             <div className="w-full">
               <MenstrualCycleTracker />
             </div>
