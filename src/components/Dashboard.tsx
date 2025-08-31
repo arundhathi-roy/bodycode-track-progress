@@ -755,12 +755,6 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Height Setup Card */}
-          {height && (
-            <div className="space-y-6">
-              <HeightSetup onHeightSet={handleHeightUpdate} currentHeight={height} />
-            </div>
-          )}
         </div>
 
         {/* Mobile Bottom Sheet for Weight Entry */}
