@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NotificationSystem } from "./notifications/NotificationSystem";
+import FoodRecognition from "./FoodRecognition";
 
 
 const Dashboard = () => {
@@ -582,6 +583,11 @@ const Dashboard = () => {
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6 md:mb-8">
+          {/* Food Recognition */}
+          <div className="w-full">
+            <FoodRecognition />
+          </div>
+          
           {/* Advanced Weight Chart */}
           <div className="w-full">
             <AdvancedWeightChart 
