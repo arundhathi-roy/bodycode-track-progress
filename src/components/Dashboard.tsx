@@ -652,7 +652,9 @@ const Dashboard = () => {
           
           {/* Menstrual Cycle Tracker - Only visible for female users */}
           {(() => {
-            console.log('Current user gender:', userProfile?.gender);
+            console.log('🔍 Debug - userProfile:', userProfile);
+            console.log('🔍 Debug - gender value:', userProfile?.gender);
+            console.log('🔍 Debug - condition result:', userProfile?.gender === 'female');
             return userProfile?.gender === 'female';
           })() && (
             <div className="w-full">
