@@ -663,9 +663,9 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-          {/* Goal Progress */}
-          <div className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8">
+          {/* Goal Progress - Full Width */}
+          <div className="w-full">
             {/* Goal Progress */}
             <Card className="p-4 sm:p-6 md:p-8 bg-gradient-card shadow-elegant border-0 overflow-hidden relative group animate-fade-in">
               {/* Background decorative elements */}
