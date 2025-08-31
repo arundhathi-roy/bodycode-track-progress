@@ -667,53 +667,119 @@ const Dashboard = () => {
           {/* Goal Progress */}
           <div className="space-y-4 sm:space-y-6">
             {/* Goal Progress */}
-            <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-foreground">Goal Progress</h3>
+            <Card className="p-4 sm:p-5 md:p-7 bg-gradient-card shadow-elegant border-0 overflow-hidden relative group animate-fade-in">
+              {/* Background decorative elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-12 translate-x-12 transition-transform duration-500 group-hover:scale-110"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-success/3 rounded-full translate-y-8 -translate-x-8 transition-transform duration-500 group-hover:scale-105"></div>
+              
+              <div className="relative z-10">
+                {/* Header with enhanced styling */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-primary/10 rounded-xl backdrop-blur-sm border border-primary/20">
+                      <Target className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Goal Progress</h3>
+                      <p className="text-xs text-muted-foreground">Track your journey to success</p>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Badge */}
+                  {currentWeight && goalWeight && (
+                    <div className="px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                      <span className="text-xs font-semibold text-primary">
+                        {Math.round(progressToGoal)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <Target className="h-5 w-5 text-primary" />
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Current: {formatWeight(currentWeight)}
-                  </span>
-                  <span className="text-muted-foreground">
-                    Goal: {goalWeight ? formatWeight(goalWeight) : 'Not set'}
-                  </span>
+
+                {/* Current vs Goal Display */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="p-4 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {formatWeight(currentWeight)}
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-success rounded-full"></div>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Goal</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {goalWeight ? formatWeight(goalWeight) : 'Not set'}
+                    </p>
+                  </div>
                 </div>
                 
                 {/* Goal Weight Slider */}
                 {height && (
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0">
-                      <span>Healthy: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}</span>
-                      <span>BMI: 18.5-24.9</span>
-                    </div>
-                    <Slider
-                      value={[goalWeight || healthyRange.min]}
-                      onValueChange={(value) => handleGoalWeightUpdate(value[0])}
-                      max={healthyRange.max}
-                      min={healthyRange.min}
-                      step={weightUnit === 'kg' ? 0.25 : 0.5}
-                      className="w-full"
-                    />
-                    <div className="text-center">
-                      <span className="text-sm font-medium text-primary">
-                        {goalWeight ? formatWeight(goalWeight) : 'Set your goal'}
-                      </span>
+                  <div className="space-y-4 mb-6">
+                    <div className="p-3 bg-background/30 rounded-xl border border-border/30">
+                      <div className="flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0 mb-3">
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-success rounded-full"></div>
+                          Healthy: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                          BMI: 18.5-24.9
+                        </span>
+                      </div>
+                      <Slider
+                        value={[goalWeight || healthyRange.min]}
+                        onValueChange={(value) => handleGoalWeightUpdate(value[0])}
+                        max={healthyRange.max}
+                        min={healthyRange.min}
+                        step={weightUnit === 'kg' ? 0.25 : 0.5}
+                        className="w-full"
+                      />
+                      <div className="text-center mt-3">
+                        <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                          {goalWeight ? formatWeight(goalWeight) : 'Set your goal'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 
-                <Progress value={Math.min(progressToGoal, 100)} className="h-3" />
-                <p className="text-sm text-center text-muted-foreground">
-                  {currentWeight && goalWeight 
-                    ? `${convertWeight(Math.max(0, currentWeight - goalWeight), 'lbs', weightUnit).toFixed(1)} ${weightUnit} to go`
-                    : height ? 'Use the slider above to set your goal weight' : 'Set your height first to enable goal setting'
-                  }
-                </p>
+                {/* Animated Progress Bar */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground font-medium">Progress</span>
+                    <span className="text-primary font-bold">{Math.round(progressToGoal)}%</span>
+                  </div>
+                  
+                  <div className="relative">
+                    <Progress 
+                      value={Math.min(progressToGoal, 100)} 
+                      className="h-4 bg-muted/50 overflow-hidden animate-scale-in"
+                    />
+                    {progressToGoal >= 100 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-bold text-white drop-shadow-sm">🎉 Goal Achieved!</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Message */}
+                <div className="mt-4 p-3 bg-gradient-to-r from-primary/5 to-success/5 rounded-xl border border-primary/10">
+                  <p className="text-sm text-center font-medium text-foreground">
+                    {currentWeight && goalWeight 
+                      ? progressToGoal >= 100
+                        ? "🎉 Congratulations! You've reached your goal!"
+                        : `${convertWeight(Math.max(0, currentWeight - goalWeight), 'lbs', weightUnit).toFixed(1)} ${weightUnit} to go - You've got this!`
+                      : height ? '✨ Use the slider above to set your goal weight' : '📏 Set your height first to enable goal setting'
+                    }
+                  </p>
+                </div>
               </div>
             </Card>
 
