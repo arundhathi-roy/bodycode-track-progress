@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { NotificationSystem } from "./notifications/NotificationSystem";
 
 
 const Dashboard = () => {
@@ -35,6 +36,14 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [recentEntries, setRecentEntries] = useState<Array<{ id: string; weight: number; entry_date: string; notes?: string }>>([]);
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    type: 'achievement' | 'reminder' | 'milestone' | 'tip';
+    title: string;
+    message: string;
+    is_read: boolean;
+    created_at: string;
+  }>>([]);
   
   // Real data states
   const [userProfile, setUserProfile] = useState<{
@@ -109,6 +118,24 @@ const Dashboard = () => {
         } else if (entries) {
           setWeightEntries(entries);
           setRecentEntries(entries);
+        }
+
+        // Fetch notifications
+        const { data: notificationData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (notificationData) {
+          setNotifications(notificationData.map(n => ({
+            id: n.id,
+            type: n.type as 'achievement' | 'reminder' | 'milestone' | 'tip',
+            title: n.title,
+            message: n.message,
+            is_read: n.is_read,
+            created_at: n.created_at
+          })));
         }
 
         // Check if user is new (no height set) and show onboarding
@@ -202,6 +229,23 @@ const Dashboard = () => {
 
   const healthyRange = getHealthyWeightRange();
 
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+
   const refreshData = () => {
     // Refetch user data after updates
     if (user) {
@@ -225,6 +269,24 @@ const Dashboard = () => {
           if (entries) {
             setWeightEntries(entries);
             setRecentEntries(entries);
+          }
+
+          // Refresh notifications
+          const { data: notificationData } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (notificationData) {
+            setNotifications(notificationData.map(n => ({
+              id: n.id,
+              type: n.type as 'achievement' | 'reminder' | 'milestone' | 'tip',
+              title: n.title,
+              message: n.message,
+              is_read: n.is_read,
+              created_at: n.created_at
+            })));
           }
         } catch (error) {
           console.error('Error refreshing data:', error);
@@ -266,15 +328,38 @@ const Dashboard = () => {
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
                 
-                <Button 
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  className="bg-background/80 px-2 sm:px-4 relative"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></span>
-                  <span className="hidden sm:inline sm:ml-2">Notifications</span>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size={isMobile ? "sm" : "default"}
+                      className="bg-background/80 px-2 sm:px-4 relative"
+                    >
+                      <Bell className="h-4 w-4" />
+                      {unreadNotifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></span>
+                      )}
+                      <span className="hidden sm:inline sm:ml-2">Notifications</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Notifications</DialogTitle>
+                    </DialogHeader>
+                    <NotificationSystem
+                      userId={user?.id || ''}
+                      notifications={notifications.map(n => ({
+                        id: n.id,
+                        type: n.type,
+                        title: n.title,
+                        message: n.message,
+                        isRead: n.is_read,
+                        createdAt: new Date(n.created_at)
+                      }))}
+                      onMarkAsRead={handleMarkAsRead}
+                    />
+                  </DialogContent>
+                </Dialog>
                 
                 <Button 
                   onClick={signOut}
