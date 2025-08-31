@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Loader2, Image, Calendar } from "lucide-react";
+import { Upload, Camera, Loader2, Image, Calendar, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -203,6 +203,41 @@ const FoodRecognition = () => {
     }
     
     return 100; // Default portion
+  };
+
+  const clearTodaysNutrition = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to clear nutrition data",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { error } = await supabase
+        .from('meals')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('meal_date', today);
+
+      if (error) throw error;
+
+      toast({
+        title: "Nutrition Cleared!",
+        description: "All today's meals have been removed",
+      });
+    } catch (error) {
+      console.error('Error clearing meals:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear nutrition data",
+        variant: "destructive"
+      });
+    }
   };
 
   const saveMealsToDatabase = async (meals: CalculatedMeal[], mealType: string = 'snack') => {
@@ -435,17 +470,28 @@ Be thorough but only include items you can clearly identify. Consider typical se
           <Camera className="h-5 w-5 text-primary" />
           Calories Tracker
         </h3>
-        <Button 
-          asChild
-          variant="outline" 
-          size="sm"
-          className="gap-2"
-        >
-          <Link to="/nutrition-calendar">
-            <Calendar className="h-4 w-4" />
-            View History
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={clearTodaysNutrition}
+            variant="outline" 
+            size="sm"
+            className="gap-2 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            Clear Today
+          </Button>
+          <Button 
+            asChild
+            variant="outline" 
+            size="sm"
+            className="gap-2"
+          >
+            <Link to="/nutrition-calendar">
+              <Calendar className="h-4 w-4" />
+              View History
+            </Link>
+          </Button>
+        </div>
       </div>
       
       <div className="space-y-4">
