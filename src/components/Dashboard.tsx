@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, Calendar, LogOut, Plus, Download, Bell } from "lucide-react";
 import { WeightChart } from "./WeightChart";
 import { WeightEntryForm } from "./WeightEntryForm";
 import { RecentWeightEntries } from "./RecentWeightEntries";
@@ -265,6 +265,16 @@ const Dashboard = () => {
           <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-7xl">
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
+                
+                <Button 
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  className="bg-background/80 px-2 sm:px-4 relative"
+                >
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></span>
+                  <span className="hidden sm:inline sm:ml-2">Notifications</span>
+                </Button>
                 
                 <Button 
                   onClick={signOut}
