@@ -318,6 +318,9 @@ const FoodRecognition = () => {
   };
 
   const processFoodRecognition = async (imageFile?: File, textDescription?: string): Promise<FoodRecognitionResult> => {
+    console.log('🚀 Starting food recognition...');
+    const startTime = performance.now();
+
     try {
       if (!user) throw new Error('User must be logged in');
       
@@ -330,6 +333,9 @@ const FoodRecognition = () => {
 
       // Upload image to Supabase storage if provided
       if (imageFile) {
+        console.log('📤 Uploading image...');
+        const uploadStart = performance.now();
+        
         const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
         
         const { data: uploadResult, error: uploadError } = await supabase.storage
@@ -352,18 +358,19 @@ const FoodRecognition = () => {
           .getPublicUrl(uploadResult.path);
 
         imageUrl = urlData.publicUrl;
+        
+        const uploadTime = performance.now() - uploadStart;
+        console.log(`✅ Upload completed in ${uploadTime.toFixed(0)}ms`);
       }
       
       // Use the AI analysis with both image and text
+      console.log('🤖 Analyzing with AI...');
+      const aiStart = performance.now();
+      
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
         body: { 
           image_url: imageUrl,
           meal_description: textDescription?.trim() || null,
-          prompt: textDescription?.trim() ? 
-            `Analyze this meal: "${textDescription}"${imageUrl ? ' along with the provided image.' : ''}
-
-Provide detailed nutrition analysis for all mentioned food items. If an image is also provided, use both the visual and textual information for the most accurate analysis.` :
-            `Analyze this food image and identify all visible food items with detailed nutrition information.`
         }
       });
 
@@ -377,6 +384,9 @@ Provide detailed nutrition analysis for all mentioned food items. If an image is
         throw new Error(data.error || 'Food analysis failed');
       }
 
+      const aiTime = performance.now() - aiStart;
+      console.log(`🤖 AI analysis completed in ${aiTime.toFixed(0)}ms`);
+
       // Transform the AI response to match our expected format
       const aiItems = data.result.items || [];
       const transformedItems: FoodItem[] = aiItems.map((item: any) => ({
@@ -389,12 +399,16 @@ Provide detailed nutrition analysis for all mentioned food items. If an image is
         ...(item.nutrition && { nutrition: item.nutrition })
       }));
 
-      // Clean up the uploaded image after processing
+      // Clean up the uploaded image in background (don't wait)
       if (uploadData) {
-        await supabase.storage
+        supabase.storage
           .from('food-images')
-          .remove([uploadData.path]);
+          .remove([uploadData.path])
+          .catch(err => console.log('Cleanup error (non-critical):', err));
       }
+
+      const totalTime = performance.now() - startTime;
+      console.log(`✅ Total processing time: ${totalTime.toFixed(0)}ms`);
 
       return {
         items: transformedItems,

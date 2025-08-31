@@ -31,7 +31,7 @@ serve(async (req) => {
     }
 
     const messages: any[] = [
-      { role: 'system', content: 'You are a nutrition expert. Return ONLY valid JSON with key "items" as an array. No prose. Each item: {name, estimated_grams, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, fiber_per_100g, confidence}.' }
+      { role: 'system', content: 'You are a fast nutrition expert. Analyze food images/descriptions quickly. Return ONLY JSON: {"items":[{"name":"","estimated_grams":0,"calories_per_100g":0,"protein_per_100g":0,"carbs_per_100g":0,"fat_per_100g":0,"fiber_per_100g":0,"confidence":0.8}]}' }
     ];
 
     if (image_url && meal_description) {
@@ -57,7 +57,12 @@ serve(async (req) => {
     const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${openAIApiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-5-2025-08-07', messages, max_completion_tokens: 1200 })
+      body: JSON.stringify({ 
+        model: 'gpt-4o-mini', // Faster, cheaper model
+        messages, 
+        max_completion_tokens: 800,
+        temperature: 0.1 // Lower temperature for more consistent output
+      })
     });
 
     if (!aiRes.ok) {
