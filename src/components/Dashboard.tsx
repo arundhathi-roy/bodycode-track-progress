@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { NotificationSystem } from "./notifications/NotificationSystem";
 import FoodRecognition from "./FoodRecognition";
 import NutritionProfile from "./NutritionProfile";
+import { Link } from "react-router-dom";
 
 
 const Dashboard = () => {
@@ -329,6 +330,18 @@ const Dashboard = () => {
           <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-7xl">
             <div className="flex justify-end">
               <div className="flex items-center gap-1 sm:gap-2">
+                
+                <Button 
+                  asChild
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  className="bg-background/80 px-2 sm:px-4"
+                >
+                  <Link to="/nutrition-calendar">
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline sm:ml-2">Nutrition Calendar</span>
+                  </Link>
+                </Button>
                 
                 <Dialog>
                   <DialogTrigger asChild>
