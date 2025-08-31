@@ -22,14 +22,18 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { image_url, prompt } = await req.json();
+    const { image_url, meal_description, prompt } = await req.json();
     
-    if (!image_url) {
-      console.error('No image URL provided in request');
-      throw new Error('No image URL provided');
+    if (!image_url && !meal_description) {
+      console.error('No image URL or meal description provided in request');
+      throw new Error('No image URL or meal description provided');
     }
 
-    console.log('Sending request to OpenAI vision model with image URL:', image_url);
+    console.log('Sending request to OpenAI with:', { 
+      has_image: !!image_url, 
+      has_description: !!meal_description,
+      prompt_preview: prompt?.substring(0, 100)
+    });
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,33 +46,50 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a nutrition analysis expert. Analyze food images and extract detailed nutritional information using the provided functions.
+            content: `You are a nutrition analysis expert. Analyze food from images and/or text descriptions and extract detailed nutritional information using the provided functions.
 
 Your task:
-1. Identify all visible food items in the image
-2. Estimate portion sizes based on visual cues (plates, utensils, hands for scale)
+1. Identify all food items mentioned in text descriptions and/or visible in images
+2. Estimate portion sizes based on descriptions (e.g., "200g chicken") or visual cues
 3. Use the extract_meal_nutrition function to provide detailed nutrition data
 4. Be accurate with portion estimates - consider typical serving sizes
-5. Include cooking methods when visible (grilled, fried, baked, etc.)
+5. Include cooking methods when mentioned or visible
+6. When both image and text are provided, use both sources for maximum accuracy
 
-Guidelines:
-- Look for visual cues to estimate realistic portion sizes
-- Consider the context (restaurant vs home meal affects portions)
-- Merge similar items (e.g., two pieces of chicken = one larger portion)
-- Be conservative with estimates rather than over-estimating`
+Guidelines for text analysis:
+- Look for quantity indicators (grams, cups, pieces, servings)
+- Infer cooking methods from descriptions
+- Consider context clues (restaurant vs home-cooked)
+- Ask for clarification in confidence scores when descriptions are vague
+
+Guidelines for image analysis:
+- Use visual cues to estimate realistic portion sizes
+- Consider plate size, utensils, hands for scale
+- Merge similar items into single portions`
           },
           {
             role: 'user',
-            content: [
+            content: image_url ? [
               {
                 type: 'text',
-                text: prompt || `Analyze this meal photo and extract detailed nutrition information for all visible food items.`
+                text: meal_description ? 
+                  `Please analyze both this meal description: "${meal_description}" and the accompanying image for detailed nutrition information.` :
+                  prompt || `Analyze this food image and extract detailed nutrition information for all visible food items.`
               },
               {
                 type: 'image_url',
                 image_url: {
                   url: image_url
                 }
+              }
+            ] : [
+              {
+                type: 'text',
+                text: meal_description ? 
+                  `Please analyze this meal description for detailed nutrition information: "${meal_description}"
+
+Provide estimates based on typical portion sizes and cooking methods. If specific quantities aren't mentioned, use reasonable assumptions for standard serving sizes.` :
+                  prompt || 'Please provide meal information to analyze.'
               }
             ]
           }

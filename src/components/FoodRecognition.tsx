@@ -1,13 +1,14 @@
 import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Loader2, Image, Calendar, Trash2 } from "lucide-react";
+import { Upload, Camera, Loader2, Image, Calendar, Trash2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FoodItem {
   label: string;
@@ -52,6 +53,7 @@ const FoodRecognition = () => {
   const [normalizedResult, setNormalizedResult] = useState<{ items: NormalizedFoodItem[] } | null>(null);
   const [calculatedMeals, setCalculatedMeals] = useState<CalculatedMeal[] | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mealDescription, setMealDescription] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const normalizeNutrition = async (detectedItems: FoodItem[]): Promise<{ items: NormalizedFoodItem[] }> => {
@@ -312,63 +314,59 @@ const FoodRecognition = () => {
     }
   };
 
-  const processFoodRecognition = async (imageFile: File): Promise<FoodRecognitionResult> => {
+  const processFoodRecognition = async (imageFile?: File, textDescription?: string): Promise<FoodRecognitionResult> => {
     try {
       if (!user) throw new Error('User must be logged in');
-
-      // Upload image to Supabase storage
-      const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('food-images')
-        .upload(fileName, imageFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw new Error('Failed to upload image');
+      if (!imageFile && !textDescription?.trim()) {
+        throw new Error('Please provide either an image or meal description');
       }
 
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from('food-images')
-        .getPublicUrl(uploadData.path);
+      let imageUrl = null;
+      let uploadData = null;
 
-      const imageUrl = urlData.publicUrl;
+      // Upload image to Supabase storage if provided
+      if (imageFile) {
+        const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
+        
+        const { data: uploadResult, error: uploadError } = await supabase.storage
+          .from('food-images')
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error('Failed to upload image');
+        }
+
+        uploadData = uploadResult;
+
+        // Get the public URL
+        const { data: urlData } = supabase.storage
+          .from('food-images')
+          .getPublicUrl(uploadResult.path);
+
+        imageUrl = urlData.publicUrl;
+      }
       
-      // Use the image URL with AI vision analysis
+      // Use the AI analysis with both image and text
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
         body: { 
           image_url: imageUrl,
-          prompt: `Photo: ${imageUrl}
+          meal_description: textDescription?.trim() || null,
+          prompt: textDescription?.trim() ? 
+            `Analyze this meal: "${textDescription}"${imageUrl ? ' along with the provided image.' : ''}
 
-Analyze this food image and identify all visible food items. For each item, provide:
-1. Food name (be specific, e.g., "grilled chicken breast" not just "chicken")
-2. Estimated portion size in grams (use visual cues like plate size, utensils for scale)
-3. Confidence level (0-100%) based on image clarity and your certainty
-4. Brief description of cooking method if apparent (e.g., grilled, fried, steamed)
-
-Return JSON only with this structure:
-{
-  "items": [
-    {
-      "name": "specific food item name",
-      "portion_grams": number,
-      "confidence": number,
-      "cooking_method": "method if apparent"
-    }
-  ]
-}
-
-Be thorough but only include items you can clearly identify. Consider typical serving sizes for accuracy.`
+Provide detailed nutrition analysis for all mentioned food items. If an image is also provided, use both the visual and textual information for the most accurate analysis.` :
+            `Analyze this food image and identify all visible food items with detailed nutrition information.`
         }
       });
 
       if (error) {
         console.error('Edge function error:', error);
-        throw new Error('Failed to analyze food image');
+        throw new Error('Failed to analyze food');
       }
 
       if (!data.success) {
@@ -384,13 +382,16 @@ Be thorough but only include items you can clearly identify. Consider typical se
         bbox_area_ratio: item.bbox_area_ratio,
         estimated_grams: item.estimated_grams,
         portion_size: item.portion_size,
-        cooking_method: item.cooking_method
+        cooking_method: item.cooking_method,
+        ...(item.nutrition && { nutrition: item.nutrition })
       }));
 
       // Clean up the uploaded image after processing
-      await supabase.storage
-        .from('food-images')
-        .remove([uploadData.path]);
+      if (uploadData) {
+        await supabase.storage
+          .from('food-images')
+          .remove([uploadData.path]);
+      }
 
       return {
         items: transformedItems,
@@ -451,11 +452,11 @@ Be thorough but only include items you can clearly identify. Consider typical se
     }
   };
 
-  const processImage = async (file: File) => {
-    // Process image
+  const processImage = async (file?: File) => {
+    // Process image and/or text
     setIsProcessing(true);
     try {
-      const recognition = await processFoodRecognition(file);
+      const recognition = await processFoodRecognition(file, mealDescription);
       setResult(recognition);
       
       // Normalize nutrition data
@@ -470,7 +471,12 @@ Be thorough but only include items you can clearly identify. Consider typical se
         }
       }
     } catch (error) {
-      console.error('Error processing image:', error);
+      console.error('Error processing:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze meal",
+        variant: "destructive"
+      });
       setResult(null);
       setNormalizedResult(null);
       setCalculatedMeals(null);
@@ -478,6 +484,18 @@ Be thorough but only include items you can clearly identify. Consider typical se
       setIsProcessing(false);
       setImagePreview(null); // Clear image preview after processing
     }
+  };
+
+  const processTextOnly = async () => {
+    if (!mealDescription.trim()) {
+      toast({
+        title: "Missing Description",
+        description: "Please enter a meal description to analyze",
+        variant: "destructive"
+      });
+      return;
+    }
+    await processImage();
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -523,6 +541,23 @@ Be thorough but only include items you can clearly identify. Consider typical se
       </div>
       
       <div className="space-y-4">
+        {/* Meal Description Input */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Meal Description (Optional)
+          </label>
+          <Textarea
+            placeholder="Describe your meal... e.g., 'Grilled chicken breast with quinoa and steamed broccoli, about 200g of chicken'"
+            value={mealDescription}
+            onChange={(e) => setMealDescription(e.target.value)}
+            className="min-h-[80px] resize-none"
+            disabled={isProcessing}
+          />
+          <p className="text-xs text-muted-foreground">
+            Adding a description helps AI provide more accurate nutrition analysis
+          </p>
+        </div>
+
         {/* Upload Area */}
         <div 
           onClick={triggerFileInput}
@@ -563,20 +598,30 @@ Be thorough but only include items you can clearly identify. Consider typical se
           ) : (
             <>
               <Image className="h-4 w-4 mr-2" />
-              Choose from Gallery
+              Choose Photo & Analyze
             </>
           )}
         </Button>
 
-        <Button 
-          onClick={handleCameraCapture}
-          disabled={isProcessing}
-          variant="outline"
-          className="w-full"
-        >
-          <Camera className="h-4 w-4 mr-2" />
-          Take Photo
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button 
+            onClick={handleCameraCapture}
+            disabled={isProcessing}
+            variant="outline"
+          >
+            <Camera className="h-4 w-4 mr-2" />
+            Take Photo
+          </Button>
+
+          <Button 
+            onClick={processTextOnly}
+            disabled={isProcessing || !mealDescription.trim()}
+            variant="outline"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Analyze Text
+          </Button>
+        </div>
 
         {/* Results are processed but not shown until final nutrition */}
 
