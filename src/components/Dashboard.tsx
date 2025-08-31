@@ -717,44 +717,7 @@ const Dashboard = () => {
               </div>
             </Card>
 
-            {/* Recent Weight Entries */}
-            <Card className="p-3 sm:p-4 md:p-6 bg-gradient-card shadow-medium border-0">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">Recent Entries</h3>
-              {isMobile ? (
-                <div className="space-y-2">
-                  {recentEntries.slice(0, 5).map((entry) => (
-                    <SwipeableEntry
-                      key={entry.id}
-                      onEdit={() => {/* Edit functionality */}}
-                      onDelete={async () => {
-                        try {
-                          await supabase
-                            .from('weight_entries')
-                            .delete()
-                            .eq('id', entry.id);
-                          refreshData();
-                        } catch (error) {
-                          console.error('Error deleting entry:', error);
-                        }
-                      }}
-                    >
-                      <div className="flex justify-between items-center p-3">
-                        <span className="text-sm font-medium">
-                          {formatWeight(entry.weight)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(entry.entry_date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </SwipeableEntry>
-                  ))}
-                </div>
-              ) : (
-                <RecentWeightEntries weightUnit={weightUnit} />
-              )}
-            </Card>
           </div>
-
         </div>
 
         {/* Mobile Bottom Sheet for Weight Entry */}
