@@ -22,17 +22,14 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { image } = await req.json();
+    const { image_url, prompt } = await req.json();
     
-    if (!image) {
-      console.error('No image provided in request');
-      throw new Error('No image provided');
+    if (!image_url) {
+      console.error('No image URL provided in request');
+      throw new Error('No image URL provided');
     }
 
-    // Remove data URL prefix if present
-    const base64Image = image.replace(/^data:image\/[^;]+;base64,/, '');
-    
-    console.log('Sending request to OpenAI vision model...');
+    console.log('Sending request to OpenAI vision model with image URL:', image_url);
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -48,13 +45,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Analyze this food image and identify all visible food items. For each item, provide:
-1. Food name (be specific, e.g., "grilled chicken breast" not just "chicken")
-2. Estimated portion size in grams (use visual cues like plate size, utensils for scale)
-3. Confidence level (0-100%) based on image clarity and your certainty
-4. Brief description of cooking method if apparent (e.g., grilled, fried, steamed)
-
-Return the response as a JSON object with this structure:
+                text: prompt || `Analyze this food image and identify all visible food items. Return JSON only with this structure:
 {
   "items": [
     {
@@ -66,12 +57,12 @@ Return the response as a JSON object with this structure:
   ]
 }
 
-Be thorough but only include items you can clearly identify. Consider typical serving sizes for accuracy.`
+Be thorough but only include items you can clearly identify.`
               },
               {
                 type: 'image_url',
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: image_url
                 }
               }
             ]

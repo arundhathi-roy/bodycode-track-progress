@@ -226,17 +226,56 @@ const FoodRecognition = () => {
 
   const processFoodRecognition = async (imageFile: File): Promise<FoodRecognitionResult> => {
     try {
-      // Convert image to base64
-      const base64Image = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(imageFile);
-      });
+      if (!user) throw new Error('User must be logged in');
 
-      // Call the edge function for food analysis
+      // Upload image to Supabase storage
+      const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('food-images')
+        .upload(fileName, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error('Failed to upload image');
+      }
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('food-images')
+        .getPublicUrl(uploadData.path);
+
+      const imageUrl = urlData.publicUrl;
+      
+      // Use the image URL with AI vision analysis
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
-        body: { image: base64Image }
+        body: { 
+          image_url: imageUrl,
+          prompt: `Photo: ${imageUrl}
+
+Analyze this food image and identify all visible food items. For each item, provide:
+1. Food name (be specific, e.g., "grilled chicken breast" not just "chicken")
+2. Estimated portion size in grams (use visual cues like plate size, utensils for scale)
+3. Confidence level (0-100%) based on image clarity and your certainty
+4. Brief description of cooking method if apparent (e.g., grilled, fried, steamed)
+
+Return JSON only with this structure:
+{
+  "items": [
+    {
+      "name": "specific food item name",
+      "portion_grams": number,
+      "confidence": number,
+      "cooking_method": "method if apparent"
+    }
+  ]
+}
+
+Be thorough but only include items you can clearly identify. Consider typical serving sizes for accuracy.`
+        }
       });
 
       if (error) {
@@ -256,6 +295,11 @@ const FoodRecognition = () => {
         confidence: item.confidence / 100, // Convert percentage to decimal
         bbox_area_ratio: Math.min(0.5, Math.max(0.1, item.portion_grams / 500)) // Estimate area from portion size
       }));
+
+      // Clean up the uploaded image (optional - remove after processing)
+      await supabase.storage
+        .from('food-images')
+        .remove([uploadData.path]);
 
       return {
         items: transformedItems,
