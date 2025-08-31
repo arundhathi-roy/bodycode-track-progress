@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NotificationSystem } from "./notifications/NotificationSystem";
 import FoodRecognition from "./FoodRecognition";
+import NutritionProfile from "./NutritionProfile";
 
 
 const Dashboard = () => {
@@ -542,10 +543,18 @@ const Dashboard = () => {
           )}
 
         </div>
+        
+        {/* Nutrition Profile Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6 md:mb-8">
+          {/* Nutrition Profile - Daily totals */}
+          <div className="lg:col-span-1">
+            <NutritionProfile />
+          </div>
 
-        {/* Calories Tracker - moved below current weight */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
-          <FoodRecognition />
+          {/* Calories Tracker */}
+          <div className="lg:col-span-2">
+            <FoodRecognition />
+          </div>
         </div>
 
         {/* Height Setup (if not set) */}

@@ -5,6 +5,8 @@ import { Upload, Camera, Loader2, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FoodItem {
   label: string;
@@ -24,12 +26,26 @@ interface NormalizedFoodItem {
   protein_per_100: number;
   carbs_per_100: number;
   fat_per_100: number;
+  fiber_per_100?: number;
+}
+
+interface CalculatedMeal {
+  name: string;
+  grams: number;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
 }
 
 const FoodRecognition = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<FoodRecognitionResult | null>(null);
   const [normalizedResult, setNormalizedResult] = useState<{ items: NormalizedFoodItem[] } | null>(null);
+  const [calculatedMeals, setCalculatedMeals] = useState<CalculatedMeal[] | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +54,7 @@ const FoodRecognition = () => {
       // Fetch nutrition reference data
       const { data: nutritionData, error } = await supabase
         .from('nutrition_reference')
-        .select('name, kcal_per_100, protein_per_100, carbs_per_100, fat_per_100, aliases');
+        .select('name, kcal_per_100, protein_per_100, carbs_per_100, fat_per_100, fiber_per_100, aliases');
 
       if (error) {
         console.error('Error fetching nutrition data:', error);
@@ -94,7 +110,8 @@ const FoodRecognition = () => {
             kcal_per_100: Number(bestMatch.kcal_per_100),
             protein_per_100: Number(bestMatch.protein_per_100),
             carbs_per_100: Number(bestMatch.carbs_per_100),
-            fat_per_100: Number(bestMatch.fat_per_100)
+            fat_per_100: Number(bestMatch.fat_per_100),
+            fiber_per_100: Number(bestMatch.fiber_per_100 || 0)
           });
         } else {
           // Default nutritional values for unknown items
@@ -104,7 +121,8 @@ const FoodRecognition = () => {
             kcal_per_100: 100,
             protein_per_100: 5,
             carbs_per_100: 15,
-            fat_per_100: 2
+            fat_per_100: 2,
+            fiber_per_100: 1
           });
         }
       }
@@ -113,6 +131,96 @@ const FoodRecognition = () => {
     } catch (error) {
       console.error('Error normalizing nutrition:', error);
       return { items: [] };
+    }
+  };
+
+  const calculatePortionsAndNutrition = (detectedItems: FoodItem[], normalizedItems: NormalizedFoodItem[]): CalculatedMeal[] => {
+    return detectedItems.map((detected, index) => {
+      const normalized = normalizedItems[index];
+      if (!normalized) return null;
+
+      // Simple portion estimation based on area ratio
+      // For demo: assume plate is ~27cm diameter, estimate grams from area
+      const plateArea = Math.PI * Math.pow(13.5, 2); // 27cm diameter
+      const itemArea = plateArea * detected.bbox_area_ratio;
+      
+      // Estimate height and density based on food type
+      let height = 1.5; // default cm
+      let density = 0.8; // default g/ml
+      
+      if (normalized.name.includes('rice') || normalized.name.includes('pasta')) {
+        height = 1.8;
+        density = 0.85;
+      } else if (normalized.name.includes('chicken') || normalized.name.includes('meat')) {
+        height = 2.0;
+        density = 1.05;
+      } else if (normalized.name.includes('salad') || normalized.name.includes('vegetables')) {
+        height = 1.2;
+        density = 0.2;
+      }
+      
+      const volume = itemArea * height; // cm³ ≈ ml
+      let grams = Math.round(volume * density);
+      
+      // Clamp between 20g and 800g, round to nearest 10g
+      grams = Math.max(20, Math.min(800, Math.round(grams / 10) * 10));
+      
+      // Calculate nutrition based on grams
+      const factor = grams / 100;
+      
+      return {
+        name: normalized.name,
+        grams: grams,
+        kcal: Math.round(normalized.kcal_per_100 * factor),
+        protein_g: Math.round(normalized.protein_per_100 * factor * 10) / 10,
+        carbs_g: Math.round(normalized.carbs_per_100 * factor * 10) / 10,
+        fat_g: Math.round(normalized.fat_per_100 * factor * 10) / 10,
+        fiber_g: Math.round((normalized.fiber_per_100 || 0) * factor * 10) / 10
+      };
+    }).filter(Boolean) as CalculatedMeal[];
+  };
+
+  const saveMealsToDatabase = async (meals: CalculatedMeal[], mealType: string = 'snack') => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save meals",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const mealEntries = meals.map(meal => ({
+        user_id: user.id,
+        meal_date: new Date().toISOString().split('T')[0],
+        meal_type: mealType,
+        food_name: meal.name,
+        grams: meal.grams,
+        kcal: meal.kcal,
+        protein_g: meal.protein_g,
+        carbs_g: meal.carbs_g,
+        fat_g: meal.fat_g,
+        fiber_g: meal.fiber_g
+      }));
+
+      const { error } = await supabase
+        .from('meals')
+        .insert(mealEntries);
+
+      if (error) throw error;
+
+      toast({
+        title: "Meals Saved!",
+        description: `Saved ${meals.length} food items to your daily nutrition`,
+      });
+    } catch (error) {
+      console.error('Error saving meals:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save meals to database",
+        variant: "destructive"
+      });
     }
   };
 
@@ -207,11 +315,18 @@ const FoodRecognition = () => {
       if (recognition.items.length > 0) {
         const normalized = await normalizeNutrition(recognition.items);
         setNormalizedResult(normalized);
+        
+        // Calculate portions and nutrition
+        if (normalized.items.length > 0) {
+          const calculated = calculatePortionsAndNutrition(recognition.items, normalized.items);
+          setCalculatedMeals(calculated);
+        }
       }
     } catch (error) {
       console.error('Error processing image:', error);
       setResult(null);
       setNormalizedResult(null);
+      setCalculatedMeals(null);
     } finally {
       setIsProcessing(false);
     }
@@ -320,42 +435,55 @@ const FoodRecognition = () => {
           </div>
         )}
 
-        {/* Normalized Nutrition Results */}
-        {normalizedResult && (
+        {/* Final Nutrition Calculation */}
+        {calculatedMeals && (
           <div className="mt-6 space-y-4">
-            <h4 className="font-medium text-foreground">Step 2: Nutrition Normalization</h4>
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium text-foreground">Step 3: Final Nutrition</h4>
+              <Button
+                onClick={() => saveMealsToDatabase(calculatedMeals)}
+                size="sm"
+                className="bg-primary hover:bg-primary/90"
+              >
+                Save to Profile
+              </Button>
+            </div>
             
             <div className="bg-background/50 rounded-lg p-4">
-              <pre className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {JSON.stringify(normalizedResult, null, 2)}
-              </pre>
-            </div>
-
-            {normalizedResult.items.length > 0 && (
-              <div className="space-y-3">
-                {normalizedResult.items.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 bg-background/30 rounded-lg"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Originally: "{item.source_name}"
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>Calories: {item.kcal_per_100}/100g</div>
-                      <div>Protein: {item.protein_per_100}g</div>
-                      <div>Carbs: {item.carbs_per_100}g</div>
-                      <div>Fat: {item.fat_per_100}g</div>
-                    </div>
+              <div className="grid grid-cols-2 gap-4 text-center mb-4">
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    {calculatedMeals.reduce((sum, meal) => sum + meal.kcal, 0)}
                   </div>
-                ))}
+                  <div className="text-xs text-muted-foreground">Total Calories</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    {calculatedMeals.reduce((sum, meal) => sum + meal.grams, 0)}g
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Weight</div>
+                </div>
               </div>
-            )}
+
+              {calculatedMeals.map((meal, index) => (
+                <div 
+                  key={index}
+                  className="p-3 bg-background/30 rounded-lg mb-3 last:mb-0"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium">{meal.name}</div>
+                    <div className="text-sm text-muted-foreground">{meal.grams}g</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>🔥 {meal.kcal} kcal</div>
+                    <div>🥩 {meal.protein_g}g protein</div>
+                    <div>🍞 {meal.carbs_g}g carbs</div>
+                    <div>🥑 {meal.fat_g}g fat</div>
+                    {meal.fiber_g > 0 && <div>🌾 {meal.fiber_g}g fiber</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

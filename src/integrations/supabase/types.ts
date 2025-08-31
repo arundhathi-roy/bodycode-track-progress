@@ -44,6 +44,57 @@ export type Database = {
         }
         Relationships: []
       }
+      meals: {
+        Row: {
+          carbs_g: number
+          created_at: string
+          fat_g: number
+          fiber_g: number
+          food_name: string
+          grams: number
+          id: string
+          kcal: number
+          meal_date: string
+          meal_type: string
+          notes: string | null
+          protein_g: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          food_name: string
+          grams?: number
+          id?: string
+          kcal?: number
+          meal_date?: string
+          meal_type: string
+          notes?: string | null
+          protein_g?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          food_name?: string
+          grams?: number
+          id?: string
+          kcal?: number
+          meal_date?: string
+          meal_type?: string
+          notes?: string | null
+          protein_g?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       menstrual_cycles: {
         Row: {
           created_at: string
@@ -119,6 +170,7 @@ export type Database = {
           carbs_per_100: number
           created_at: string
           fat_per_100: number
+          fiber_per_100: number
           id: string
           kcal_per_100: number
           name: string
@@ -130,6 +182,7 @@ export type Database = {
           carbs_per_100: number
           created_at?: string
           fat_per_100: number
+          fiber_per_100?: number
           id?: string
           kcal_per_100: number
           name: string
@@ -141,6 +194,7 @@ export type Database = {
           carbs_per_100?: number
           created_at?: string
           fat_per_100?: number
+          fiber_per_100?: number
           id?: string
           kcal_per_100?: number
           name?: string
