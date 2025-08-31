@@ -329,6 +329,7 @@ const FoodRecognition = () => {
       setCalculatedMeals(null);
     } finally {
       setIsProcessing(false);
+      setImagePreview(null); // Clear image preview after processing
     }
   };
 
