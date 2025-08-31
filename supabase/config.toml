@@ -1,1 +1,4 @@
 project_id = "gxwudkbfxuhyjjkdwfgc"
+
+[functions.analyze-food-image]
+verify_jwt = true

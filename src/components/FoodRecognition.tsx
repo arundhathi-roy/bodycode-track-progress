@@ -225,35 +225,46 @@ const FoodRecognition = () => {
   };
 
   const processFoodRecognition = async (imageFile: File): Promise<FoodRecognitionResult> => {
-    // Simulate food recognition for demo purposes
-    // In a real implementation, this would use AI/ML for food detection
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock results for demo
-        const mockItems: FoodItem[] = [
-          {
-            label: "rice",
-            confidence: 0.892,
-            bbox_area_ratio: 0.35
-          },
-          {
-            label: "grilled chicken", 
-            confidence: 0.765,
-            bbox_area_ratio: 0.28
-          },
-          {
-            label: "salad",
-            confidence: 0.654,
-            bbox_area_ratio: 0.22
-          }
-        ];
+    try {
+      // Convert image to base64
+      const base64Image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
 
-        resolve({
-          items: mockItems,
-          plate_present: true
-        });
-      }, 2000); // Simulate processing time
-    });
+      // Call the edge function for food analysis
+      const { data, error } = await supabase.functions.invoke('analyze-food-image', {
+        body: { image: base64Image }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error('Failed to analyze food image');
+      }
+
+      if (!data.success) {
+        console.error('Analysis failed:', data.error);
+        throw new Error(data.error || 'Food analysis failed');
+      }
+
+      // Transform the AI response to match our expected format
+      const aiItems = data.result.items || [];
+      const transformedItems: FoodItem[] = aiItems.map((item: any) => ({
+        label: item.name,
+        confidence: item.confidence / 100, // Convert percentage to decimal
+        bbox_area_ratio: Math.min(0.5, Math.max(0.1, item.portion_grams / 500)) // Estimate area from portion size
+      }));
+
+      return {
+        items: transformedItems,
+        plate_present: transformedItems.length > 0
+      };
+    } catch (error) {
+      console.error('Error in processFoodRecognition:', error);
+      throw error;
+    }
   };
 
   const handleFileSelect = async (file: File) => {
