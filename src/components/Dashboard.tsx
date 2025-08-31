@@ -667,119 +667,237 @@ const Dashboard = () => {
           {/* Goal Progress */}
           <div className="space-y-4 sm:space-y-6">
             {/* Goal Progress */}
-            <Card className="p-4 sm:p-5 md:p-7 bg-gradient-card shadow-elegant border-0 overflow-hidden relative group animate-fade-in">
+            <Card className="p-4 sm:p-6 md:p-8 bg-gradient-card shadow-elegant border-0 overflow-hidden relative group animate-fade-in">
               {/* Background decorative elements */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-12 translate-x-12 transition-transform duration-500 group-hover:scale-110"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-success/3 rounded-full translate-y-8 -translate-x-8 transition-transform duration-500 group-hover:scale-105"></div>
+              <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-primary/2 rounded-full translate-x-8 transition-transform duration-700 group-hover:rotate-12"></div>
               
-              <div className="relative z-10">
+              <div className="relative z-10 space-y-8">
                 {/* Header with enhanced styling */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-primary/10 rounded-xl backdrop-blur-sm border border-primary/20">
-                      <Target className="h-5 w-5 text-primary" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-xl backdrop-blur-sm border border-primary/20 shadow-inner">
+                      <Target className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Goal Progress</h3>
-                      <p className="text-xs text-muted-foreground">Track your journey to success</p>
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground">Goal Progress</h3>
+                      <p className="text-sm text-muted-foreground">Track your journey to success</p>
                     </div>
                   </div>
                   
                   {/* Progress Badge */}
                   {currentWeight && goalWeight && (
-                    <div className="px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
-                      <span className="text-xs font-semibold text-primary">
-                        {Math.round(progressToGoal)}%
+                    <div className="px-4 py-2 bg-primary/10 rounded-full border border-primary/20 shadow-soft">
+                      <span className="text-sm font-bold text-primary">
+                        {Math.round(progressToGoal)}% Complete
                       </span>
                     </div>
                   )}
                 </div>
 
                 {/* Current vs Goal Display */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="p-4 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="p-6 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300 group">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Current Weight</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                       {formatWeight(currentWeight)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Last updated: {new Date().toLocaleDateString()}
                     </p>
                   </div>
                   
-                  <div className="p-4 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-success rounded-full"></div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Goal</span>
+                  <div className="p-6 bg-background/50 rounded-2xl border border-border/50 backdrop-blur-sm hover-scale transition-all duration-300 group">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-3 h-3 bg-success rounded-full"></div>
+                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Target Weight</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                       {goalWeight ? formatWeight(goalWeight) : 'Not set'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {goalWeight && currentWeight ? 
+                        `${Math.abs(currentWeight - goalWeight) < 1 ? 'Almost there!' : 
+                          currentWeight > goalWeight ? 'Weight loss goal' : 'Weight gain goal'}` : 
+                        'Set your target below'
+                      }
                     </p>
                   </div>
                 </div>
+
+                {/* Weekly Progress Indicators */}
+                {weightEntries.length > 0 && (
+                  <div className="p-5 bg-background/30 rounded-xl border border-border/30 space-y-4">
+                    <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      Weekly Snapshot
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-background/50 rounded-xl">
+                        <p className="text-xs text-muted-foreground mb-1">This Week</p>
+                        <p className="font-bold text-foreground">
+                          {changeFromYesterday !== null ? 
+                            `${changeFromYesterday > 0 ? '+' : ''}${convertWeight(changeFromYesterday, 'lbs', weightUnit).toFixed(1)}` : 
+                            '0.0'
+                          }
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-background/50 rounded-xl">
+                        <p className="text-xs text-muted-foreground mb-1">Total Change</p>
+                        <p className="font-bold text-foreground">
+                          {totalChange !== null ? 
+                            `${totalChange > 0 ? '+' : ''}${convertWeight(totalChange, 'lbs', weightUnit).toFixed(1)}` : 
+                            '0.0'
+                          }
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-background/50 rounded-xl">
+                        <p className="text-xs text-muted-foreground mb-1">Days Tracking</p>
+                        <p className="font-bold text-foreground">{weightEntries.length}</p>
+                      </div>
+                      <div className="text-center p-3 bg-background/50 rounded-xl">
+                        <p className="text-xs text-muted-foreground mb-1">Avg/Week</p>
+                        <p className="font-bold text-foreground">
+                          {totalChange !== null && weightEntries.length > 7 ? 
+                            `${(totalChange / (weightEntries.length / 7)).toFixed(1)}` : 
+                            '0.0'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Goal Weight Slider */}
                 {height && (
-                  <div className="space-y-4 mb-6">
-                    <div className="p-3 bg-background/30 rounded-xl border border-border/30">
-                      <div className="flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0 mb-3">
-                        <span className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-success rounded-full"></div>
-                          Healthy: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}
+                  <div className="space-y-6">
+                    <div className="p-5 bg-background/30 rounded-xl border border-border/30">
+                      <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-success rounded-full"></div>
+                        Set Your Goal Weight
+                      </h4>
+                      
+                      <div className="flex flex-col sm:flex-row justify-between text-sm text-muted-foreground space-y-1 sm:space-y-0 mb-4">
+                        <span className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-success rounded-full"></div>
+                          Healthy Range: {convertWeight(healthyRange.min, 'lbs', weightUnit).toFixed(1)}-{convertWeight(healthyRange.max, 'lbs', weightUnit).toFixed(1)} {weightUnit}
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                          BMI: 18.5-24.9
+                        <span className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          BMI Range: 18.5-24.9
                         </span>
                       </div>
-                      <Slider
-                        value={[goalWeight || healthyRange.min]}
-                        onValueChange={(value) => handleGoalWeightUpdate(value[0])}
-                        max={healthyRange.max}
-                        min={healthyRange.min}
-                        step={weightUnit === 'kg' ? 0.25 : 0.5}
-                        className="w-full"
-                      />
-                      <div className="text-center mt-3">
-                        <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                          {goalWeight ? formatWeight(goalWeight) : 'Set your goal'}
-                        </span>
+                      
+                      <div className="space-y-4">
+                        <Slider
+                          value={[goalWeight || healthyRange.min]}
+                          onValueChange={(value) => handleGoalWeightUpdate(value[0])}
+                          max={healthyRange.max}
+                          min={healthyRange.min}
+                          step={weightUnit === 'kg' ? 0.25 : 0.5}
+                          className="w-full"
+                        />
+                        <div className="text-center">
+                          <span className="text-lg font-bold text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+                            Target: {goalWeight ? formatWeight(goalWeight) : 'Set your goal'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
                 
                 {/* Animated Progress Bar */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground font-medium">Progress</span>
-                    <span className="text-primary font-bold">{Math.round(progressToGoal)}%</span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      Progress Tracker
+                    </h4>
+                    <span className="text-xl font-bold text-primary">{Math.round(progressToGoal)}%</span>
                   </div>
                   
-                  <div className="relative">
+                  <div className="relative space-y-2">
                     <Progress 
                       value={Math.min(progressToGoal, 100)} 
-                      className="h-4 bg-muted/50 overflow-hidden animate-scale-in"
+                      className="h-6 bg-muted/50 overflow-hidden animate-scale-in shadow-inner"
                     />
                     {progressToGoal >= 100 && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs font-bold text-white drop-shadow-sm">🎉 Goal Achieved!</span>
+                        <span className="text-sm font-bold text-white drop-shadow-lg animate-bounce">🎉 Goal Achieved!</span>
                       </div>
                     )}
+                    
+                    {/* Progress milestones */}
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span className={progressToGoal >= 25 ? 'text-success font-medium' : ''}>25%</span>
+                      <span className={progressToGoal >= 50 ? 'text-success font-medium' : ''}>50%</span>
+                      <span className={progressToGoal >= 75 ? 'text-success font-medium' : ''}>75%</span>
+                      <span className={progressToGoal >= 100 ? 'text-success font-medium' : ''}>100%</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Status Message */}
-                <div className="mt-4 p-3 bg-gradient-to-r from-primary/5 to-success/5 rounded-xl border border-primary/10">
-                  <p className="text-sm text-center font-medium text-foreground">
-                    {currentWeight && goalWeight 
-                      ? progressToGoal >= 100
-                        ? "🎉 Congratulations! You've reached your goal!"
-                        : `${convertWeight(Math.max(0, currentWeight - goalWeight), 'lbs', weightUnit).toFixed(1)} ${weightUnit} to go - You've got this!`
-                      : height ? '✨ Use the slider above to set your goal weight' : '📏 Set your height first to enable goal setting'
-                    }
-                  </p>
+                {/* Motivational Status Message */}
+                <div className="p-6 bg-gradient-to-r from-primary/5 to-success/5 rounded-2xl border border-primary/10 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      {progressToGoal >= 100 ? '🎉' : progressToGoal >= 75 ? '🔥' : progressToGoal >= 50 ? '💪' : progressToGoal >= 25 ? '⭐' : '🚀'}
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-foreground">
+                        {currentWeight && goalWeight 
+                          ? progressToGoal >= 100
+                            ? "Amazing! You've crushed your goal!"
+                            : progressToGoal >= 75
+                            ? "You're so close to your goal!"
+                            : progressToGoal >= 50
+                            ? "Halfway there - keep it up!"
+                            : progressToGoal >= 25
+                            ? "Great progress - stay motivated!"
+                            : "Every journey begins with a single step"
+                          : height ? '✨ Set your goal weight above to start tracking' : '📏 Set your height first to enable goal setting'
+                        }
+                      </p>
+                      {currentWeight && goalWeight && (
+                        <p className="text-sm text-muted-foreground">
+                          {progressToGoal < 100 && `Only ${convertWeight(Math.abs(currentWeight - goalWeight), 'lbs', weightUnit).toFixed(1)} ${weightUnit} to go!`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Goal Timeline Estimate */}
+                {currentWeight && goalWeight && totalChange !== null && weightEntries.length > 7 && (
+                  <div className="p-5 bg-background/30 rounded-xl border border-border/30">
+                    <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-warning rounded-full"></div>
+                      Timeline Estimate
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                      <div className="p-4 bg-background/50 rounded-xl">
+                        <p className="text-sm text-muted-foreground mb-1">At Current Pace</p>
+                        <p className="text-xl font-bold text-foreground">
+                          {Math.abs(totalChange) > 0.1 ? 
+                            `${Math.ceil(Math.abs((currentWeight - goalWeight) / (totalChange / (weightEntries.length / 7))))} weeks` : 
+                            'Stay consistent!'
+                          }
+                        </p>
+                      </div>
+                      <div className="p-4 bg-background/50 rounded-xl">
+                        <p className="text-sm text-muted-foreground mb-1">Recommended Pace</p>
+                        <p className="text-xl font-bold text-foreground">
+                          {Math.ceil(Math.abs((currentWeight - goalWeight) / (weightUnit === 'kg' ? 0.45 : 1)))} weeks
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 
