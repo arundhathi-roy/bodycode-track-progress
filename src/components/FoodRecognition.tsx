@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Loader2 } from "lucide-react";
+import { Upload, Camera, Loader2, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 interface FoodItem {
   label: string;
@@ -159,6 +161,42 @@ const FoodRecognition = () => {
     };
     reader.readAsDataURL(file);
 
+    await processImage(file);
+  };
+
+  const handleCameraCapture = async () => {
+    try {
+      if (!Capacitor.isNativePlatform()) {
+        // Fallback to file input on web
+        triggerFileInput();
+        return;
+      }
+
+      const image = await CapacitorCamera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera
+      });
+
+      if (image.webPath) {
+        setImagePreview(image.webPath);
+        
+        // Convert to File object
+        const response = await fetch(image.webPath);
+        const blob = await response.blob();
+        const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+        
+        await processImage(file);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      // Fallback to file input if camera fails
+      triggerFileInput();
+    }
+  };
+
+  const processImage = async (file: File) => {
     // Process image
     setIsProcessing(true);
     try {
@@ -228,7 +266,7 @@ const FoodRecognition = () => {
         <Button 
           onClick={triggerFileInput}
           disabled={isProcessing}
-          className="w-full"
+          className="w-full mb-2"
         >
           {isProcessing ? (
             <>
@@ -237,10 +275,20 @@ const FoodRecognition = () => {
             </>
           ) : (
             <>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Photo
+              <Image className="h-4 w-4 mr-2" />
+              Choose from Gallery
             </>
           )}
+        </Button>
+
+        <Button 
+          onClick={handleCameraCapture}
+          disabled={isProcessing}
+          variant="outline"
+          className="w-full"
+        >
+          <Camera className="h-4 w-4 mr-2" />
+          Take Photo
         </Button>
 
         {/* Results */}
