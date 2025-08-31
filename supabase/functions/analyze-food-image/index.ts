@@ -49,15 +49,25 @@ Detect visible foods and return ONLY JSON.
 Schema:
 {
   "items": [
-    { "label": "string", "confidence": 0.0-1.0, "bbox_area_ratio": 0.0-1.0 }
+    { 
+      "label": "string", 
+      "confidence": 0.0-1.0, 
+      "bbox_area_ratio": 0.0-1.0,
+      "estimated_grams": number,
+      "portion_size": "small|medium|large",
+      "cooking_method": "string"
+    }
   ],
-  "plate_present": true|false
+  "plate_present": true|false,
+  "plate_size_estimate": "small|medium|large"
 }
 
 Rules:
 - No text outside JSON.
 - Keep labels short and common (e.g., "rice", "chicken curry", "salad").
-- Merge duplicates (two scoops of rice = one entry).`
+- Merge duplicates (two scoops of rice = one entry).
+- Estimate realistic portion sizes based on visual cues.
+- Include cooking method if visible (grilled, fried, steamed, etc.).`
           },
           {
             role: 'user',

@@ -13,11 +13,15 @@ interface FoodItem {
   label: string;
   confidence: number;
   bbox_area_ratio: number;
+  estimated_grams?: number;
+  portion_size?: 'small' | 'medium' | 'large';
+  cooking_method?: string;
 }
 
 interface FoodRecognitionResult {
   items: FoodItem[];
   plate_present: boolean;
+  plate_size_estimate?: 'small' | 'medium' | 'large';
 }
 
 interface NormalizedFoodItem {
@@ -140,37 +144,34 @@ const FoodRecognition = () => {
       const normalized = normalizedItems[index];
       if (!normalized) return null;
 
-      // Simple portion estimation based on area ratio
-      // For demo: assume plate is ~27cm diameter, estimate grams from area
-      const plateArea = Math.PI * Math.pow(13.5, 2); // 27cm diameter
-      const itemArea = plateArea * detected.bbox_area_ratio;
-      
-      // Estimate height and density based on food type
-      let height = 1.5; // default cm
-      let density = 0.8; // default g/ml
-      
-      if (normalized.name.includes('rice') || normalized.name.includes('pasta')) {
-        height = 1.8;
-        density = 0.85;
-      } else if (normalized.name.includes('chicken') || normalized.name.includes('meat')) {
-        height = 2.0;
-        density = 1.05;
-      } else if (normalized.name.includes('salad') || normalized.name.includes('vegetables')) {
-        height = 1.2;
-        density = 0.2;
+      let grams = 0;
+
+      // Use AI's estimated grams if available, otherwise fall back to area-based calculation
+      if (detected.estimated_grams) {
+        grams = Math.round(detected.estimated_grams);
+      } else {
+        // Enhanced portion size mapping
+        const portionMultipliers = {
+          'small': 0.7,
+          'medium': 1.0,
+          'large': 1.4
+        };
+
+        // Base portions by food type (in grams)
+        const basePortion = getBasePortionByFoodType(normalized.name);
+        const sizeMultiplier = portionMultipliers[detected.portion_size || 'medium'];
+        
+        grams = Math.round(basePortion * sizeMultiplier);
       }
-      
-      const volume = itemArea * height; // cm³ ≈ ml
-      let grams = Math.round(volume * density);
-      
-      // Clamp between 20g and 800g, round to nearest 10g
-      grams = Math.max(20, Math.min(800, Math.round(grams / 10) * 10));
+
+      // Ensure reasonable bounds
+      grams = Math.max(10, Math.min(1000, grams));
       
       // Calculate nutrition based on grams
       const factor = grams / 100;
       
       return {
-        name: normalized.name,
+        name: `${normalized.name}${detected.cooking_method ? ` (${detected.cooking_method})` : ''}`,
         grams: grams,
         kcal: Math.round(normalized.kcal_per_100 * factor),
         protein_g: Math.round(normalized.protein_per_100 * factor * 10) / 10,
@@ -179,6 +180,29 @@ const FoodRecognition = () => {
         fiber_g: Math.round((normalized.fiber_per_100 || 0) * factor * 10) / 10
       };
     }).filter(Boolean) as CalculatedMeal[];
+  };
+
+  const getBasePortionByFoodType = (foodName: string): number => {
+    const name = foodName.toLowerCase();
+    
+    // Portion sizes in grams based on common serving sizes
+    if (name.includes('rice') || name.includes('pasta') || name.includes('noodles')) {
+      return 150; // Cooked grains
+    } else if (name.includes('chicken') || name.includes('beef') || name.includes('pork') || name.includes('fish')) {
+      return 120; // Protein portions
+    } else if (name.includes('salad') || name.includes('vegetables') || name.includes('lettuce')) {
+      return 80; // Vegetables
+    } else if (name.includes('bread') || name.includes('toast')) {
+      return 30; // Bread slice
+    } else if (name.includes('cheese')) {
+      return 25; // Cheese portion
+    } else if (name.includes('sauce') || name.includes('dressing')) {
+      return 15; // Condiments
+    } else if (name.includes('fruit') || name.includes('apple') || name.includes('banana')) {
+      return 150; // Fruits
+    }
+    
+    return 100; // Default portion
   };
 
   const saveMealsToDatabase = async (meals: CalculatedMeal[], mealType: string = 'snack') => {
@@ -294,7 +318,10 @@ Be thorough but only include items you can clearly identify. Consider typical se
       const transformedItems: FoodItem[] = aiItems.map((item: any) => ({
         label: item.label,
         confidence: item.confidence,
-        bbox_area_ratio: item.bbox_area_ratio
+        bbox_area_ratio: item.bbox_area_ratio,
+        estimated_grams: item.estimated_grams,
+        portion_size: item.portion_size,
+        cooking_method: item.cooking_method
       }));
 
       // Clean up the uploaded image after processing
@@ -304,7 +331,8 @@ Be thorough but only include items you can clearly identify. Consider typical se
 
       return {
         items: transformedItems,
-        plate_present: data.result.plate_present || transformedItems.length > 0
+        plate_present: data.result.plate_present || transformedItems.length > 0,
+        plate_size_estimate: data.result.plate_size_estimate
       };
     } catch (error) {
       console.error('Error in processFoodRecognition:', error);
