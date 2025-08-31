@@ -19,12 +19,30 @@ serve(async (req) => {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'OpenAI API key not configured' 
+      console.error('OpenAI API key not found - returning fallback nutrition');
+      const transformedResult = {
+        items: [{
+          label: 'Estimated meal',
+          confidence: 0.2,
+          bbox_area_ratio: 0.8,
+          estimated_grams: 150,
+          portion_size: 'medium',
+          cooking_method: 'unknown',
+          nutrition: {
+            calories_per_100g: 180,
+            protein_per_100g: 8,
+            carbs_per_100g: 22,
+            fat_per_100g: 6,
+            fiber_per_100g: 3
+          }
+        }]
+      };
+      return new Response(JSON.stringify({
+        success: true,
+        warning: 'OPENAI_API_KEY missing; returned fallback estimates.',
+        result: transformedResult
       }), {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
