@@ -413,7 +413,7 @@ const FoodRecognition = () => {
         {calculatedMeals && (
           <div className="mt-6 space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="font-medium text-foreground">Step 3: Final Nutrition</h4>
+              <h4 className="font-medium text-foreground">Nutrition Results</h4>
               <Button
                 onClick={() => saveMealsToDatabase(calculatedMeals)}
                 size="sm"
