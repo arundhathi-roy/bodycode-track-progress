@@ -113,6 +113,42 @@ export type Database = {
         }
         Relationships: []
       }
+      nutrition_reference: {
+        Row: {
+          aliases: string[] | null
+          carbs_per_100: number
+          created_at: string
+          fat_per_100: number
+          id: string
+          kcal_per_100: number
+          name: string
+          protein_per_100: number
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          carbs_per_100: number
+          created_at?: string
+          fat_per_100: number
+          id?: string
+          kcal_per_100: number
+          name: string
+          protein_per_100: number
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[] | null
+          carbs_per_100?: number
+          created_at?: string
+          fat_per_100?: number
+          id?: string
+          kcal_per_100?: number
+          name?: string
+          protein_per_100?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
