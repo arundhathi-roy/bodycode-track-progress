@@ -41,23 +41,30 @@ serve(async (req) => {
         model: 'o4-mini-2025-04-16',
         messages: [
           {
+            role: 'system',
+            content: `You are a food recognition assistant.
+Input: a meal photo.
+Detect visible foods and return ONLY JSON.
+
+Schema:
+{
+  "items": [
+    { "label": "string", "confidence": 0.0-1.0, "bbox_area_ratio": 0.0-1.0 }
+  ],
+  "plate_present": true|false
+}
+
+Rules:
+- No text outside JSON.
+- Keep labels short and common (e.g., "rice", "chicken curry", "salad").
+- Merge duplicates (two scoops of rice = one entry).`
+          },
+          {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: prompt || `Analyze this food image and identify all visible food items. Return JSON only with this structure:
-{
-  "items": [
-    {
-      "name": "specific food item name",
-      "portion_grams": number,
-      "confidence": number,
-      "cooking_method": "method if apparent"
-    }
-  ]
-}
-
-Be thorough but only include items you can clearly identify.`
+                text: prompt || `Photo: ${image_url}`
               },
               {
                 type: 'image_url',
@@ -69,7 +76,7 @@ Be thorough but only include items you can clearly identify.`
           }
         ],
         max_completion_tokens: 1000,
-        temperature: 0.2
+        temperature: 0.1
       })
     });
 

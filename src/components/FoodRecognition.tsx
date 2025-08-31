@@ -291,19 +291,19 @@ Be thorough but only include items you can clearly identify. Consider typical se
       // Transform the AI response to match our expected format
       const aiItems = data.result.items || [];
       const transformedItems: FoodItem[] = aiItems.map((item: any) => ({
-        label: item.name,
-        confidence: item.confidence / 100, // Convert percentage to decimal
-        bbox_area_ratio: Math.min(0.5, Math.max(0.1, item.portion_grams / 500)) // Estimate area from portion size
+        label: item.label,
+        confidence: item.confidence,
+        bbox_area_ratio: item.bbox_area_ratio
       }));
 
-      // Clean up the uploaded image (optional - remove after processing)
+      // Clean up the uploaded image after processing
       await supabase.storage
         .from('food-images')
         .remove([uploadData.path]);
 
       return {
         items: transformedItems,
-        plate_present: transformedItems.length > 0
+        plate_present: data.result.plate_present || transformedItems.length > 0
       };
     } catch (error) {
       console.error('Error in processFoodRecognition:', error);
