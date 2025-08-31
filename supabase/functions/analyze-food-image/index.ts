@@ -1,8 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -17,12 +15,28 @@ serve(async (req) => {
   try {
     console.log('Starting food image analysis...');
     
+    // Get the API key from environment
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    console.log('API key available:', !!openAIApiKey);
+    
     if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
-      throw new Error('OpenAI API key not configured');
+      console.error('OpenAI API key not found in environment variables');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'OpenAI API key not configured' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const { image_url, meal_description, prompt } = await req.json();
+    const requestBody = await req.json();
+    console.log('Request received:', { 
+      has_image: !!requestBody.image_url, 
+      has_description: !!requestBody.meal_description 
+    });
+    
+    const { image_url, meal_description, prompt } = requestBody;
     
     if (!image_url && !meal_description) {
       console.error('No image URL or meal description provided in request');
@@ -42,7 +56,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-5-2025-08-07',
         messages: [
           {
             role: 'system',
